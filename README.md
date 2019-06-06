@@ -1,3 +1,3 @@
 # WHyTeS
 
-This repo should contain working code and useful datasets, now it is mess. 
+This repo should contain files from developement, it is not meant to be functional. 
