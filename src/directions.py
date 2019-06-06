@@ -1,12 +1,12 @@
 from sklearn.mixture import GaussianMixture
 import transformation_with_dirs as tr
-import grid_with_directions as grid
+#import grid_with_directions as grid
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import scipy.stats as st
 import numpy as np
-import matplotlib.patches as pat
-import pandas as pd
+#import matplotlib.patches as pat
+#import pandas as pd
 
 
 
@@ -37,12 +37,12 @@ class Directions:
             path ... string, path to the test dataset
             plot_it ... boolean, create and save graph of y and target
             err ... float, root of mean of squared errors
-        dirs.vykresli(time, window)
-            time ... number, value of timestep in wich we want to show the model
-            window ... integer, time step between two graphs
-
-        
-            
+#        dirs.vykresli(time, window)
+#            time ... number, value of timestep in wich we want to show the model
+#            window ... integer, time step between two graphs
+#
+#        
+#            
     """
 
 
@@ -137,7 +137,7 @@ class Directions:
             plt.close()
         return np.sqrt(np.mean((y - target) ** 2.0))
 
-
+"""
     def vykresli(self, time, window):
         XYUVC = self._create_grid_model(time)
         plt.quiver(XYUVC[:, 0], XYUVC[:, 1], XYUVC[:, 2], XYUVC[:, 3], XYUVC[:, 4], angles='xy', scale_units='xy', scale=1.0)
@@ -163,26 +163,28 @@ class Directions:
         a = table.groupby([1, 2]).apply(self._UVC_max).rename(columns={0:3, 1:4, 2:5})
         a.reset_index(inplace=True)
         return a.values
+"""
 
 
-    def _cartesian_product(self, *arrays):
-        """
-        coppied from:
-        'https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of'+\
-        '-x-and-y-array-points-into-single-array-of-2d-points'
-        input: *arrays enumeration of central_points
-        output: numpy array (central positions of cels of grid)
-        uses: np.empty(),np.ix_(), np.reshape()
-        objective: to perform cartesian product of values in columns
-        """
-        la = len(arrays)
-        arr = np.empty([len(a) for a in arrays] + [la],
-                       dtype=arrays[0].dtype)
-        for i, a in enumerate(np.ix_(*arrays)):
-            arr[..., i] = a
-        return arr.reshape(-1, la)
+#    def _cartesian_product(self, *arrays):
+#        """
+#        coppied from:
+#        'https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of'+\
+#        '-x-and-y-array-points-into-single-array-of-2d-points'
+#        input: *arrays enumeration of central_points
+#        output: numpy array (central positions of cels of grid)
+#        uses: np.empty(),np.ix_(), np.reshape()
+#        objective: to perform cartesian product of values in columns
+#        """
+#        la = len(arrays)
+#        arr = np.empty([len(a) for a in arrays] + [la],
+#                       dtype=arrays[0].dtype)
+#        for i, a in enumerate(np.ix_(*arrays)):
+#            arr[..., i] = a
+#        return arr.reshape(-1, la)
 
 
+"""
     def _entropy(self, series):
         try:
             normed = series/np.sum(series)
@@ -208,7 +210,7 @@ class Directions:
         xyw[1] = xyw[1] * xyw[2]
         xyw[2] = self._entropy(group[5])
         return xyw
-
+"""
 
 
     #def _create_model_freq(self, condition, path):
