@@ -13,3 +13,11 @@ SciPy 1.2.1,
 
 **example, how to run method:**
 $ python run_method.py
+
+**format of data:**
+text files with measurements in rows and variables in columns
+
+timestamp;
+spatial variables;
+(optional) angle and speed
+
