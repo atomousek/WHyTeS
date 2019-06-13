@@ -15,9 +15,9 @@ SciPy 1.2.1,
 $ python run_method.py
 
 **format of data:**
-text files with measurements in rows and variables in columns
+text files with measurements in rows and variables in columns ordered in this way:
 
-timestamp;
-spatial variables;
+timestamp,
+spatial variables,
 (optional) angle and speed
 
