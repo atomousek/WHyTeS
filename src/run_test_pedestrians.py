@@ -9,6 +9,7 @@ import dataset_io as dio
 #c = dio.loading_data('../data/training_two_weeks_01.txt')
 #c = dio.loading_data('../data/10_weeks_doors.txt')
 c = dio.loading_data('../data/pedestrians/python_training_two_weeks.txt')
+c = np.c_[c, np.ones(len(c))]
 
 
 #a = np.array([0, 7200, 14400, 21600, 28800, 36000, 43200, 50400, 57600, 64800, 72000, 79200])
