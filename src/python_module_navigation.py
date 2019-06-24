@@ -23,7 +23,7 @@ def python_function_update(dataset):
     longest = 60*60*24*7*4 # testing one day
     shortest = 60*60*4 # testing one day
     #### konec testovani
-    edges_of_cell = [60]
+    edges_of_cell = [3600, 0.01]
     k = 1  # muzeme zkusit i 9
     # hours_of_measurement = 24 * 7  # nepotrebne
     radius = 1.0
@@ -46,15 +46,23 @@ def python_function_estimate(whole_model, time):
     objective: to estimate event occurences in the given time
     """
     ###################################################
-    # otevirani a zavirani dveri, pozitivni i negativni
+    # continuous variable in the second dimension
+    # we have to create grid for the time
     ###################################################
     if whole_model[3][0] == 0 and len(whole_model[3][1]) == 0:  # no model
-        return whole_model[0][0]  # average
+        #return whole_model[0][0]  # average
+        return float(0.0)
     else:
-        freq_p = mdl.one_freq(np.array([[time]]), whole_model[0],
-                              whole_model[1], whole_model[3], whole_model[4],
-                              whole_model[2])
-    return float(freq_p[0])
+        TIME = np.ones(100) * time
+        POSITIONS = np.arange(100) / 100.0
+        WHOLE_QUESTION = np.c_[TIME, POSITIONS]
+        freqs = []
+        for question in WHOLE_QUESTION:
+            freqs.append(mdl.one_freq(question.reshape(1,-1), whole_model[0],
+                                      whole_model[1], whole_model[3], whole_model[4],
+                                      whole_model[2]))
+        freqs = np.array(freqs)
+    return float(np.argmax(freqs) / 100.0)
 
 
 def python_function_save(whole_model, file_path):
