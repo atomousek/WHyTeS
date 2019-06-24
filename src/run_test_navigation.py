@@ -2,7 +2,7 @@
 
 
 import numpy as np
-import python_module_doors as pm
+import python_module_navigation as pm
 #import tested_doors_python_module as pm
 import dataset_io as dio
 
