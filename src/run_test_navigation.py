@@ -65,15 +65,15 @@ print(model[4])
 
 # estimate test 0
 for test_num in xrange(3):
-	test_times = np.loadtxt('../data/navigation/test_times_' + str(test_num) + '.txt')
-	prediction = []
-	for time in test_times:
-		prediction.append(pm.python_function_estimate(model, time))
+    test_times = np.loadtxt('../data/navigation/test_times_' + str(test_num) + '.txt')
+    prediction = []
+    for time in test_times:
+        prediction.append(pm.python_function_estimate(model, time))
 
-	predicted_data = np.array(prediction)
-	test_data = np.loadtxt('../data/navigation/test_data_' + str(test_num) + '.txt')
+    predicted_data = np.array(prediction)
+    test_data = np.loadtxt('../data/navigation/test_data_' + str(test_num) + '.txt')
 
-	print('data' + str(test_num) + ' MSE: ' + str(np.mean((predicted_data - test_data)**2)))
+    print('data' + str(test_num) + ' MSE: ' + str(np.mean((predicted_data - test_data)**2)))
 
 
 
