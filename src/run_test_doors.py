@@ -62,6 +62,18 @@ print(model[4])
 #    print(pm.python_function_estimate(model, c[-1, 0] + i * 60))
 
 
+# estimate test 0
+test_times = np.loadtxt('../data/test_times_1.txt')
+prediction = []
+for time in test_times:
+    prediction.append(pm.python_function_estimate(model, time))
+
+predicted_data = np.array(prediction)
+test_data = np.loadtxt('../data/test_data_1.txt')
+
+print('MSE: ' + str(np.mean((predicted_data - test_data)**2)))
+
+
 
 """
 C = np.arange(20).reshape((5, 4))
