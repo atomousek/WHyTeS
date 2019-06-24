@@ -8,7 +8,8 @@ import dataset_io as dio
 
 #c = dio.loading_data('../data/training_two_weeks_01.txt')
 #c = dio.loading_data('../data/10_weeks_doors.txt')
-c = dio.loading_data('../data/doors/training_data.txt')
+c = dio.loading_data('../data/navigation/training_data.txt')
+c = np.c_[c, np.ones(len(c))]
 
 
 #a = np.array([0, 7200, 14400, 21600, 28800, 36000, 43200, 50400, 57600, 64800, 72000, 79200])
@@ -63,14 +64,14 @@ print(model[4])
 
 
 # estimate test 0
-for test_num in xrange(1, 10):
-	test_times = np.loadtxt('../data/doors/test_times_' + str(test_num) + '.txt')
+for test_num in xrange(3):
+	test_times = np.loadtxt('../data/navigation/test_times_' + str(test_num) + '.txt')
 	prediction = []
 	for time in test_times:
 		prediction.append(pm.python_function_estimate(model, time))
 
 	predicted_data = np.array(prediction)
-	test_data = np.loadtxt('../data/doors/test_data_' + str(test_num) + '.txt')
+	test_data = np.loadtxt('../data/navigation/test_data_' + str(test_num) + '.txt')
 
 	print('data' + str(test_num) + ' MSE: ' + str(np.mean((predicted_data - test_data)**2)))
 
