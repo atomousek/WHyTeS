@@ -63,15 +63,16 @@ print(model[4])
 
 
 # estimate test 0
-test_times = np.loadtxt('../data/doors/test_times_1.txt')
-prediction = []
-for time in test_times:
-    prediction.append(pm.python_function_estimate(model, time))
+for test_num in xrange(1, 10):
+	test_times = np.loadtxt('../data/doors/test_times_' + str(test_num) + '.txt')
+	prediction = []
+	for time in test_times:
+		prediction.append(pm.python_function_estimate(model, time))
 
-predicted_data = np.array(prediction)
-test_data = np.loadtxt('../data/doors/test_data_1.txt')
+	predicted_data = np.array(prediction)
+	test_data = np.loadtxt('../data/doors/test_data_' + str(test_num) + '.txt')
 
-print('MSE: ' + str(np.mean((predicted_data - test_data)**2)))
+	print('data' + str(test_num) + ' MSE: ' + str(np.mean((predicted_data - test_data)**2)))
 
 
 
