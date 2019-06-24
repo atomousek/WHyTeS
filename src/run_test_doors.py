@@ -2,13 +2,13 @@
 
 
 import numpy as np
-import python_module as pm
+import python_module_doors as pm
 #import tested_doors_python_module as pm
 import dataset_io as dio
 
 #c = dio.loading_data('../data/training_two_weeks_01.txt')
 #c = dio.loading_data('../data/10_weeks_doors.txt')
-c = dio.loading_data('../data/training_data.txt')
+c = dio.loading_data('../data/doors/training_data.txt')
 
 
 #a = np.array([0, 7200, 14400, 21600, 28800, 36000, 43200, 50400, 57600, 64800, 72000, 79200])
@@ -63,13 +63,13 @@ print(model[4])
 
 
 # estimate test 0
-test_times = np.loadtxt('../data/test_times_1.txt')
+test_times = np.loadtxt('../data/doors/test_times_1.txt')
 prediction = []
 for time in test_times:
     prediction.append(pm.python_function_estimate(model, time))
 
 predicted_data = np.array(prediction)
-test_data = np.loadtxt('../data/test_data_1.txt')
+test_data = np.loadtxt('../data/doors/test_data_1.txt')
 
 print('MSE: ' + str(np.mean((predicted_data - test_data)**2)))
 
