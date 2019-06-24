@@ -23,7 +23,7 @@ def python_function_update(dataset):
     longest = 60*60*24*7*4 # testing one day
     shortest = 60*60*4 # testing one day
     #### konec testovani
-    edges_of_cell = [60]
+    edges_of_cell = [600, 0.2, 0.2]
     k = 1  # muzeme zkusit i 9
     # hours_of_measurement = 24 * 7  # nepotrebne
     radius = 1.0
