@@ -1,9 +1,9 @@
 #include "grid.h"
-
+/*
 int main(){
 
 }
-
+*/
 void expansion(int radius, int dim, vector<int> &line, vector<vector<int>> &output, int counter, int max_dim)
 {
 	if(dim > 0)

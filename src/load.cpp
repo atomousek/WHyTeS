@@ -1,5 +1,5 @@
 #include "load.h"
-
+/*
 int main(int argc, char *argv[])
 {
 
@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     cout << vect[0][0] << endl;
     
     return 0;
-}
+}*/
 
 void readDataset(string file_name, vector<vector<double>> &vect)
 {
