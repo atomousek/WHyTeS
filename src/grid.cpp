@@ -28,3 +28,14 @@ void expansion(int radius, int dim, vector<int> &line, vector<vector<int>> &outp
 	}
 }
 
+void expand(int radius, int dim, vector<vector<int>> &output)
+{
+	int counter = 0;
+	int length = pow((2*radius+1), dim);
+	vector<int> line(dim);
+	vector<vector<int>> out (dim*length);
+	expansion(radius, dim-1, line, output, counter, dim);
+
+
+}
+

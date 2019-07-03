@@ -35,7 +35,7 @@ void readDataset(string file_name, vector<vector<double>> &vect)
     }
 }
 
-void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings, set<vector<double>> &rounded_set)
+void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings)
 {
     for(auto &vect : vect_list)  // for each vector<double> in vector<vector<double>>
     {
@@ -45,7 +45,26 @@ void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings, 
         
         }
     }
-    rounded_set.insert(vect_list.begin(), vect_list.end());   // makes set out of vector<vector<double>>
+   
 }
  
+void applySet(vector<vector<double>> &vect_list, set<vector<double>> &rounded_set){
+	rounded_set.insert(vect_list.begin(), vect_list.end());   // makes set out of vector<vector<double>>
+}
+
+
+void countInSet(vector<vector<double>> &rounded_dataset, set<vector<double>> my_set)
+{
+	int num;
+	vector<vector<double>> vect_from_set(my_set.size());
+	copy(my_set.begin(), my_set.end(), vect_from_set.begin());
+	cout << "copied " << vect_from_set.size() << endl;
+	for(auto &vect : vect_from_set)
+	{
+		num = count(rounded_dataset.begin(), rounded_dataset.end(), vect);
+		vect.push_back(num);
+		//cout << num << endl;
+	}	
+}
+
 
