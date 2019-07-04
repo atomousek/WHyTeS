@@ -11,20 +11,20 @@ int main(int argc, char *argv[])
     return 0;
 }*/
 
-void readDataset(string file_name, vector<vector<double>> &vect)
+void readDataset(std::string file_name, std::vector<std::vector<double>> &vect)
 {
     /*
      
     */
     
-    ifstream file(file_name, ios::in);    // opens file 
+    std::ifstream file(file_name, std::ios::in);    // opens file 
     if (file.good())
     {
-        string str;
+	std::string str;
         while(getline(file, str))    // takes line and saves it as string until there is end of line
         {
-            vector<double> temp_vect;
-            istringstream ss(str);
+            std::vector<double> temp_vect;
+	    std::istringstream ss(str);
             double num;
             while(ss >> num) 
             {
@@ -35,7 +35,7 @@ void readDataset(string file_name, vector<vector<double>> &vect)
     }
 }
 
-void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings)
+void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings)
 {
     for(auto &vect : vect_list)  // for each vector<double> in vector<vector<double>>
     {
@@ -48,17 +48,17 @@ void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings)
    
 }
  
-void applySet(vector<vector<double>> &vect_list, set<vector<double>> &rounded_set){
+void applySet(std::vector<std::vector<double>> &vect_list, std::set<std::vector<double>> &rounded_set){
 	rounded_set.insert(vect_list.begin(), vect_list.end());   // makes set out of vector<vector<double>>
 }
 
 
-void countInSet(vector<vector<double>> &rounded_dataset, set<vector<double>> my_set)
+void countInSet(std::vector<std::vector<double>> &rounded_dataset, std::set<std::vector<double>> my_set)
 {
 	int num;
-	vector<vector<double>> vect_from_set(my_set.size());
+	std::vector<std::vector<double>> vect_from_set(my_set.size());
 	copy(my_set.begin(), my_set.end(), vect_from_set.begin());
-	cout << "copied " << vect_from_set.size() << endl;
+	std::cout << "copied " << vect_from_set.size() << std::endl;
 	for(auto &vect : vect_from_set)
 	{
 		num = count(rounded_dataset.begin(), rounded_dataset.end(), vect);

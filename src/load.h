@@ -12,15 +12,15 @@
 #include <cmath>
 #include <algorithm>
 
-using namespace std;
+//using namespace std;
 
-void readDataset(string file_name, vector<vector<double>> &vect);
+void readDataset(std::string file_name, std::vector<std::vector<double>> &vect);
 
-void roundDataset(vector<vector<double>> &vect_list, vector<double> &roundings);
+void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings);
 
-void applySet(vector<vector<double>> &vect_list, set<vector<double>> &rounded_set);
+void applySet(std::vector<std::vector<double>> &vect_list, std::set<std::vector<double>> &rounded_set);
 
-void countInSet(vector<vector<double>> &rounded_dataset, set<vector<double>> my_set);
+void countInSet(std::vector<std::vector<double>> &rounded_dataset, std::set<std::vector<double>> my_set);
 
 
 #endif

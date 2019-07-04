@@ -4,7 +4,7 @@ int main(){
 
 }
 */
-void expansion(int radius, int dim, vector<int> &line, vector<vector<int>> &output, int counter, int max_dim)
+void expansion(int radius, int dim, std::vector<int> &line, std::vector<std::vector<int>> &output, int counter, int max_dim)
 {
 	if(dim > 0)
 	{
@@ -28,12 +28,12 @@ void expansion(int radius, int dim, vector<int> &line, vector<vector<int>> &outp
 	}
 }
 
-void expand(int radius, int dim, vector<vector<int>> &output)
+void expand(int radius, int dim, std::vector<std::vector<int>> &output)
 {
 	int counter = 0;
-	int length = pow((2*radius+1), dim);
-	vector<int> line(dim);
-	vector<vector<int>> out (dim*length);
+	//int length = pow((2*radius+1), dim);
+	std::vector<int> line(dim);
+	//vector<vector<int>> out (dim*length);
 	expansion(radius, dim-1, line, output, counter, dim);
 
 
