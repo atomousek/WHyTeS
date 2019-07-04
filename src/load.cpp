@@ -1,20 +1,14 @@
 #include "load.h"
-/*
-int main(int argc, char *argv[])
-{
 
-    vector<vector<double>> vect;
-    set<vector<double>> rounded_set;
-    readDataset("data.txt", vect);
-    cout << vect[0][0] << endl;
-    
-    return 0;
-}*/
+
+
 
 void readDataset(std::string file_name, std::vector<std::vector<double>> &vect)
 {
     /*
-     
+     	loads dataset from *.txt file
+    	input: file name 
+	output: loaded dataset as vector of vectors
     */
     
     std::ifstream file(file_name, std::ios::in);    // opens file 
@@ -37,6 +31,13 @@ void readDataset(std::string file_name, std::vector<std::vector<double>> &vect)
 
 void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings)
 {
+	/*
+	 	applies rounding function to datase
+		input: dataset loaded as vector of vectors
+		output: rounded dataset
+	 
+	 */
+
     for(std::vector<double> &vect : vect_list)  // for each vector<double> in vector<vector<double>>
     {
         for(unsigned int i = 0; i < vect.size(); ++i)
@@ -48,7 +49,14 @@ void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<doubl
    
 }
  
-void applySet(std::vector<std::vector<double>> &vect_list, std::set<std::vector<double>> &rounded_set){
+void applySet(std::vector<std::vector<double>> &vect_list, std::set<std::vector<double>> &rounded_set)
+{
+	/*
+	 	makes set of vectors out of vector of vectors
+		input: vector of vectors (vect_list)
+		output: set of vectors (rounded_set)
+	 */
+
 	rounded_set.insert(vect_list.begin(), vect_list.end());   // makes set out of vector<vector<double>>
 }
 
