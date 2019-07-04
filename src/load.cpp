@@ -37,7 +37,7 @@ void readDataset(std::string file_name, std::vector<std::vector<double>> &vect)
 
 void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings)
 {
-    for(auto &vect : vect_list)  // for each vector<double> in vector<vector<double>>
+    for(std::vector<double> &vect : vect_list)  // for each vector<double> in vector<vector<double>>
     {
         for(unsigned int i = 0; i < vect.size(); ++i)
         {
@@ -59,7 +59,7 @@ void countInSet(std::vector<std::vector<double>> &rounded_dataset, std::set<std:
 	std::vector<std::vector<double>> vect_from_set(my_set.size());
 	copy(my_set.begin(), my_set.end(), vect_from_set.begin());
 	std::cout << "copied " << vect_from_set.size() << std::endl;
-	for(auto &vect : vect_from_set)
+	for(std::vector<double> &vect : vect_from_set)
 	{
 		num = count(rounded_dataset.begin(), rounded_dataset.end(), vect);
 		vect.push_back(num);
