@@ -34,7 +34,7 @@ void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<doubl
 	/*
 	 	applies rounding function to datase
 		input: dataset loaded as vector of vectors
-		output: rounded dataset
+		output: serial number of bins
 	 
 	 */
 
@@ -42,8 +42,8 @@ void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<doubl
     {
         for(unsigned int i = 0; i < vect.size(); ++i)
         {
-            vect[i] = floor(vect[i] / roundings[i]) * roundings[i] + (roundings[i] / 2.0);
-        
+           // vect[i] = floor(vect[i] / roundings[i]) * roundings[i] + (roundings[i] / 2.0);
+	   vect[i] = (int)floor(vect[i] / roundings[i]);
         }
     }
    

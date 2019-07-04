@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS+=-Wall -Werror -pedantic -g
+CPPFLAGS+=-Wall -Werror -pedantic -g -O2 -march=native
 RM=rm -f
 
 main: main.o load.o grid.o

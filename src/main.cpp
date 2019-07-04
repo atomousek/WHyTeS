@@ -44,6 +44,10 @@ int main(int argc, char *argv[]){
 	}*/
 
 	std::cout << "set " << rounded_set.size() << std::endl;
+
+	std::set<std::vector<double>> extended_set;
+	extendGrid(rounded_set, extended_set, matrix);
+
 	//countInSet(vect, rounded_set);
 	return 0;
 }
