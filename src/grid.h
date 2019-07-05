@@ -42,5 +42,7 @@ void expand(int radius, int dim, std::vector<std::vector<int>> &output);
 
 void extendGrid(std::set<std::vector<int>> &rounded_set, std::unordered_set<std::vector<int>, VectorHash> &extended_set, std::vector<std::vector<int>> &surroundings);
 
+void createGrid(std::vector<std::vector<double>> &dataset, std::vector<std::vector<double>> &grid, int radius, std::vector<double> cell_size);
+
 
 #endif

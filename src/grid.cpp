@@ -1,8 +1,23 @@
 #include "grid.h"
 
 
+void createGrid(std::vector<std::vector<double>> &dataset, std::vector<std::vector<double>> &grid, int radius, std::vector<double> cell_size)
+{
+    int dim = dataset[0].size();
+    int height = pow(2*radius+1, dim);
 
-void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings, std::vector<std::vector<int>>  &int_vector)
+    std::vector<std::vector<int>> surroundings(height);
+    for(int i = 0; i < height; ++i)
+    {
+        surroundings[i].resize(dim);
+
+    }
+    std::vector<std::vector<int>> int_vector;
+
+} 
+
+
+void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &cel_size, std::vector<std::vector<int>>  &int_vector)
 {
 
     for(std::vector<double> &vect : vect_list)  // for each vector<double> in vector<vector<double>>
@@ -10,8 +25,8 @@ void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<doubl
 	std::vector<int> temp_vect;
         for(unsigned int i = 0; i < vect.size(); ++i)
         {
-           // vect[i] = floor(vect[i] / roundings[i]) * roundings[i] + (roundings[i] / 2.0);
-            temp_vect.push_back(floor(vect[i] / roundings[i]));
+           // vect[i] = floor(vect[i] / cel_size[i]) * cel_size[i] + (cel_size[i] / 2.0);
+            temp_vect.push_back(floor(vect[i] / cel_size[i]));
         }
 	int_vector.push_back(temp_vect);
     }
