@@ -7,7 +7,7 @@ int main(int argc, char *argv[]){
 	std::vector<std::vector<double>> vect;
 	readDataset("data.txt", vect);
 	std::cout << vect[0][1] << std::endl;
-	std::set<std::vector<double>> rounded_set;
+	std::set<std::vector<int>> rounded_set;
 	std::vector<double> roundings(3);
 
 	roundings[0] = 600.0;
@@ -25,9 +25,10 @@ int main(int argc, char *argv[]){
 	
 	}
 
-	roundDataset(vect, roundings);
+	std::vector<std::vector<int>> int_vector;
+	roundDataset(vect, roundings, int_vector);
 	std::cout << "rounded " << vect.size() << std::endl;
-	applySet(vect, rounded_set);
+	applySet(int_vector, rounded_set);
 	expand(radius, dim, matrix);
 
 	/* 
@@ -45,8 +46,9 @@ int main(int argc, char *argv[]){
 
 	std::cout << "set " << rounded_set.size() << std::endl;
 
-	std::set<std::vector<double>> extended_set;
+	std::set<std::vector<int>> extended_set;
 	extendGrid(rounded_set, extended_set, matrix);
+	std::cout << "set " << extended_set.size() << std::endl;
 
 	//countInSet(vect, rounded_set);
 	return 0;

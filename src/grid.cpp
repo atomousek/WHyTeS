@@ -2,6 +2,50 @@
 
 
 
+void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings, std::vector<std::vector<int>>  &int_vector)
+{
+
+    for(std::vector<double> &vect : vect_list)  // for each vector<double> in vector<vector<double>>
+    {
+	std::vector<int> temp_vect;
+        for(unsigned int i = 0; i < vect.size(); ++i)
+        {
+           // vect[i] = floor(vect[i] / roundings[i]) * roundings[i] + (roundings[i] / 2.0);
+            temp_vect.push_back(floor(vect[i] / roundings[i]));
+        }
+	int_vector.push_back(temp_vect);
+    }
+
+}
+
+
+void applySet(std::vector<std::vector<int>> &vect_list, std::set<std::vector<int>> &rounded_set)
+{
+        /*
+                makes set of vectors out of vector of vectors
+                input: vector of vectors (vect_list)
+                output: set of vectors (rounded_set)
+         */
+
+        rounded_set.insert(vect_list.begin(), vect_list.end());   // makes set out of vector<vector<double>>
+}
+
+
+void countInSet(std::vector<std::vector<double>> &rounded_dataset, std::set<std::vector<double>> my_set)
+{
+        int num;
+        std::vector<std::vector<double>> vect_from_set(my_set.size());
+        copy(my_set.begin(), my_set.end(), vect_from_set.begin());
+        std::cout << "copied " << vect_from_set.size() << std::endl;
+        for(std::vector<double> &vect : vect_from_set)
+        {
+                num = count(rounded_dataset.begin(), rounded_dataset.end(), vect);
+                vect.push_back(num);
+                //cout << num << endl;
+        }
+}
+
+
 
 void expansion(int radius, int dim, std::vector<int> &line, std::vector<std::vector<int>> &output, int counter, int max_dim)
 {
@@ -37,15 +81,15 @@ void expand(int radius, int dim, std::vector<std::vector<int>> &output)
 }
 
 
-void extendGrid(std::set<std::vector<double>> &rounded_set, std::set<std::vector<double>> &extended_set, std::vector<std::vector<int>> &surroundings)
+void extendGrid(std::set<std::vector<int>> &rounded_set, std::set<std::vector<int>> &extended_set, std::vector<std::vector<int>> &surroundings)
 {
-	std::vector<std::vector<double>> vect_list;	
-	for(std::vector<double> vect : rounded_set)
+	std::vector<std::vector<int>> vect_list;	
+	for(std::vector<int> vect : rounded_set)
 	{
 		for(std::vector<int> shift : surroundings)
 		{
 
-			std::vector<double> temp_vect;
+			std::vector<int> temp_vect;
 	
 			for(unsigned int i = 0; i < vect.size(); ++i)
 			{
@@ -54,6 +98,9 @@ void extendGrid(std::set<std::vector<double>> &rounded_set, std::set<std::vector
 			vect_list.push_back(temp_vect);
 		}
 	}
-	extended_set.insert(vect_list.begin(), vect_list.begin());
+	std::cout << "number of vectors before applying set " << vect_list.size() << std::endl;
+	std::set<std::vector<int>> my_set(vect_list.begin(), vect_list.end());
+	std::cout << "number of vectors after applying set " << my_set.size() << std::endl;
+
 }	
 
