@@ -37,7 +37,7 @@ void expand(int radius, int dim, std::vector<std::vector<int>> &output)
 }
 
 
-void extendGrid(std::set<std::vector<double>> rounded_set, std::set<std::vector<double>> extended_set, std::vector<std::vector<int>> surroundings)
+void extendGrid(std::set<std::vector<double>> &rounded_set, std::set<std::vector<double>> &extended_set, std::vector<std::vector<int>> &surroundings)
 {
 	std::vector<std::vector<double>> vect_list;	
 	for(std::vector<double> vect : rounded_set)
