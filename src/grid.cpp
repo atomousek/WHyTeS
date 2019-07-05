@@ -12,10 +12,35 @@ void createGrid(std::vector<std::vector<double>> &dataset, std::vector<std::vect
         surroundings[i].resize(dim);
 
     }
-    std::vector<std::vector<int>> int_vector;
+    std::vector<std::vector<int>> rounded_data;
+    roundDataset(dataset, cell_size, rounded_data);
 
+    std::set<std::vector<int>> rounded_set;
+    applySet(rounded_data, rounded_set);
+    
+    expand(radius, dim, surroundings);
+
+    std::unordered_set<std::vector<int>, VectorHash> extended_set(rounded_set.size()*surroundings.size());
+    extendGrid(rounded_set, extended_set, surroundings);
+
+    indexesToGrid(extended_set, grid, cell_size);
+
+    
 } 
 
+void indexesToGrid(std::unordered_set<std::vector<int>, VectorHash> extended_set, std::vector<std::vector<double>> &grid, std::vector<double> cell_size) 
+{
+    std::copy(extended_set.begin(), extended_set.end(), grid.begin());
+    
+    for(std::vector<double> &vect : grid)
+    {
+        for(unsigned int i = 0; i < cell_size.size(); ++i)
+        {
+            vect[i] = vect[i]*cell_size[i] + cell_size[i]/2.0;
+        }
+    }
+
+}
 
 void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &cel_size, std::vector<std::vector<int>>  &int_vector)
 {

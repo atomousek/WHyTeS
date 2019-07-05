@@ -18,6 +18,10 @@
 //using namespace std;
 
 struct VectorHash {
+    /*
+        This was taken over from: https://stackoverflow.com/questions/29855908/c-unordered-set-of-vectors 
+    */
+    
     size_t operator()(const std::vector<int>& v) const {
         std::hash<int> hasher;
         size_t seed = 0;
@@ -29,6 +33,8 @@ struct VectorHash {
 };
 
 
+
+void indexesToGrid(std::unordered_set<std::vector<int>, VectorHash> extended_set, std::vector<std::vector<double>> &grid, std::vector<double> cell_size);
 
 void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &roundings, std::vector<std::vector<int>> &int_vector);
 
