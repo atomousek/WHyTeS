@@ -81,12 +81,12 @@ void expand(int radius, int dim, std::vector<std::vector<int>> &output)
 }
 
 
-void extendGrid(std::set<std::vector<int>> &rounded_set, std::set<std::vector<int>> &extended_set, std::vector<std::vector<int>> &surroundings)
+void extendGrid(std::set<std::vector<int>> &rounded_set, std::unordered_set<std::vector<int>, VectorHash> &extended_set, std::vector<std::vector<int>> &surroundings)
 {
 	//std::vector<std::vector<int>> vect_list;	
-	for(std::vector<int> vect : rounded_set)
+	for(const std::vector<int> &vect : rounded_set)
 	{
-		for(std::vector<int> shift : surroundings)
+		for(const std::vector<int> &shift : surroundings)
 		{
 
 			std::vector<int> temp_vect;

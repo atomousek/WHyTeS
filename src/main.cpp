@@ -2,6 +2,7 @@
 #include "grid.h"
 
 
+
 int main(int argc, char *argv[]){
 
 	std::vector<std::vector<double>> vect;
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]){
 
 	std::cout << "set " << rounded_set.size() << std::endl;
 
-	std::set<std::vector<int>> extended_set;
+	std::unordered_set<std::vector<int>, VectorHash> extended_set(rounded_set.size()*matrix.size());
     extendGrid(rounded_set, extended_set, matrix);
     std::cout << "set " << extended_set.size() << std::endl;
 
