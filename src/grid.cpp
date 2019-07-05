@@ -83,7 +83,7 @@ void expand(int radius, int dim, std::vector<std::vector<int>> &output)
 
 void extendGrid(std::set<std::vector<int>> &rounded_set, std::set<std::vector<int>> &extended_set, std::vector<std::vector<int>> &surroundings)
 {
-	std::vector<std::vector<int>> vect_list;	
+	//std::vector<std::vector<int>> vect_list;	
 	for(std::vector<int> vect : rounded_set)
 	{
 		for(std::vector<int> shift : surroundings)
@@ -95,12 +95,13 @@ void extendGrid(std::set<std::vector<int>> &rounded_set, std::set<std::vector<in
 			{
 				temp_vect.push_back(vect[i]+shift[i]);
 			}
-			vect_list.push_back(temp_vect);
+			extended_set.insert(temp_vect);
 		}
 	}
-	std::cout << "number of vectors before applying set " << vect_list.size() << std::endl;
-	std::set<std::vector<int>> my_set(vect_list.begin(), vect_list.end());
-	std::cout << "number of vectors after applying set " << my_set.size() << std::endl;
+    //std::cout << "number of vectors before applying set " << vect_list.size() << std::endl;
+	//std::set<std::vector<int>> my_set(vect_list.begin(), vect_list.end());
+    //extended_set.insert(vect_list.begin(), vect_list.end());
+    //std::cout << "number of vectors after applying set " << extended_set.size() << std::endl;
 
 }	
 
