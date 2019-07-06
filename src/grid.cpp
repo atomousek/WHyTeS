@@ -30,8 +30,20 @@ void createGrid(std::vector<std::vector<double>> &dataset, std::vector<std::vect
 
 void indexesToGrid(std::unordered_set<std::vector<int>, VectorHash> extended_set, std::vector<std::vector<double>> &grid, std::vector<double> cell_size) 
 {
-    std::copy(extended_set.begin(), extended_set.end(), grid.begin());
+   // std::copy(extended_set.begin(), extended_set.end(), grid.begin());
+   
+  
+    for(std::vector<int> vect_from_set :  extended_set)
+    {
+        std::vector<double> temp_vect;
+        for(unsigned int i = 0; i < vect_from_set.size(); ++i)
+        {
+            temp_vect.push_back(vect_from_set[i]*cell_size[i] + cell_size[i]/2.0);
+        }
+        grid.push_back(temp_vect);
     
+    }    
+    /*
     for(std::vector<double> &vect : grid)
     {
         for(unsigned int i = 0; i < cell_size.size(); ++i)
@@ -39,7 +51,7 @@ void indexesToGrid(std::unordered_set<std::vector<int>, VectorHash> extended_set
             vect[i] = vect[i]*cell_size[i] + cell_size[i]/2.0;
         }
     }
-
+    */
 }
 
 void roundDataset(std::vector<std::vector<double>> &vect_list, std::vector<double> &cel_size, std::vector<std::vector<int>>  &int_vector)

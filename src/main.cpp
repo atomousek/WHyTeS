@@ -4,6 +4,13 @@
 
 
 int main(int argc, char *argv[]){
+
+
+    // grid() needs to be called here with correct arguments
+    // grid() shoul work the same as following code (which has been put into comment
+
+
+
     /*
 	std::vector<std::vector<double>> vect;
 	readDataset("data.txt", vect);
