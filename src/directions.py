@@ -52,9 +52,10 @@ class Directions:
     """
 
 
-    def __init__(self, clusters=3, structure=[2, [1.0, 1.0], [86400.0, 604800.0]]):
+    def __init__(self, clusters=3, structure=[2, [1.0, 1.0], [86400.0, 604800.0]], weights=None):
         self.clusters = clusters
         self.structure = structure
+        self.weights = weights
 
 
     def fit(self, training_path = '../data/two_weeks_days_nights_weekends_with_dirs.txt'):
@@ -67,7 +68,7 @@ class Directions:
             self
         """
         self.C_1, self.Pi_1, self.PREC_1 = self._estimate_distribution(1, training_path)
-        self.C_0, self.Pi_0, self.PREC_0 = self._estimate_distribution(0, training_path)
+        #self.C_0, self.Pi_0, self.PREC_0 = self._estimate_distribution(0, training_path)
         return self
 
 
@@ -103,7 +104,12 @@ class Directions:
             PREC ... np.array, precision matrices of clusters, inverse matrix to the estimation of the covariance of the distribution
         """
         X = self._projection(path, condition)
-        clf = GaussianMixture(n_components=self.clusters, max_iter=500).fit(X)
+        print 5
+        #clf = GaussianMixture(n_components=self.clusters, max_iter=500, weights_init=self.weights).fit(X)
+        tmp = GaussianMixture(n_components=self.clusters, max_iter=500)
+        tmp.weights_ = self.weights
+        clf = tmp.fit(X)        
+        print 6
         C = clf.means_
         labels = clf.predict(X)
         PREC = self._recalculate_precisions(X, labels)
@@ -121,7 +127,8 @@ class Directions:
             X ... numpy array, data projection
         """
         dataset=np.loadtxt(path)
-        X = self._create_X(dataset[dataset[:, -1] == condition, : -1])
+        X = self._create_X(dataset[:, : -1])
+        print 'x shape: '+ str(X.shape)
         return X
 
 
@@ -153,18 +160,19 @@ class Directions:
             prediction ... probability of the occurrence of detections
         """
         DISTR_1 = []
-        DISTR_0 = []
+        #DISTR_0 = []
         for idx in xrange(self.clusters):
             DISTR_1.append(self.Pi_1[idx] * self._prob_of_belong(X, self.C_1[idx], self.PREC_1[idx]))
-            DISTR_0.append(self.Pi_0[idx] * self._prob_of_belong(X, self.C_0[idx], self.PREC_0[idx]))
+            #DISTR_0.append(self.Pi_0[idx] * self._prob_of_belong(X, self.C_0[idx], self.PREC_0[idx]))
         DISTR_1 = np.array(DISTR_1)
-        DISTR_0 = np.array(DISTR_0)
+        #DISTR_0 = np.array(DISTR_0)
         model_1_s = np.sum(DISTR_1, axis=0)
-        model_0_s = np.sum(DISTR_0, axis=0)
-        model_01_s = model_1_s + model_0_s
-        model_01_s[model_01_s == 0] = 1.0
-        model_1_s[model_01_s == 0] = 0.5
-        y = model_1_s / model_01_s
+        #model_0_s = np.sum(DISTR_0, axis=0)
+        #model_01_s = model_1_s + model_0_s
+        #model_01_s[model_01_s == 0] = 1.0
+        #model_1_s[model_01_s == 0] = 0.5
+        #y = model_1_s / model_01_s
+        y = model_1_s
         return y
 
 
