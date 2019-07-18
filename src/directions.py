@@ -91,6 +91,25 @@ class Directions:
             return X, target
 
 
+    def my_transform_data(self, dataset, for_fremen=False):
+        """
+        objective:
+            return transformed data into warped hypertime space and also return target values (0 or 1)
+        input:
+            path ... string, path to the test dataset
+        outputs:
+            X ... np.array, test dataset transformed into the hypertime space
+            target ... target values
+        """
+        #dataset=np.loadtxt(path)
+        X = self._create_X(dataset[:, : -1])
+        target = dataset[:, -1]
+        if for_fremen:
+            return X, target, dataset[:, 0]
+        else:
+            return X, target        
+
+
     def _estimate_distribution(self, condition, path):
         """
         objective:
@@ -104,16 +123,19 @@ class Directions:
             PREC ... np.array, precision matrices of clusters, inverse matrix to the estimation of the covariance of the distribution
         """
         X = self._projection(path, condition)
-        print 5
         #clf = GaussianMixture(n_components=self.clusters, max_iter=500, weights_init=self.weights).fit(X)
-        tmp = GaussianMixture(n_components=self.clusters, max_iter=500)
-        tmp.weights_ = self.weights
-        clf = tmp.fit(X)        
-        print 6
-        C = clf.means_
-        labels = clf.predict(X)
+        #tmp = GaussianMixture(n_components=self.clusters, max_iter=500)
+        #tmp.weights_ = self.weights
+        #clf = tmp.fit(X)        
+        
+        #C = clf.means_
+        dataset = np.loadtxt(path)
+        C = np.average(dataset[:, -1], weights = self.weights)
+        print 'weighted average: ' + str(C)
+        #labels = clf.predict(X)
+        labels = None
         PREC = self._recalculate_precisions(X, labels)
-        Pi = clf.weights_
+        Pi = 1
         return C, Pi, PREC
 
     def _projection(self, path, condition):
@@ -126,9 +148,9 @@ class Directions:
         outputs:
             X ... numpy array, data projection
         """
-        dataset=np.loadtxt(path)
+        dataset = np.loadtxt(path)
         X = self._create_X(dataset[:, : -1])
-        print 'x shape: '+ str(X.shape)
+        #print 'x shape: '+ str(X.shape)
         return X
 
 
@@ -142,10 +164,11 @@ class Directions:
         output:
             PREC ... numpy array, precision matrices
         """
-        COV = []
-        for i in xrange(self.clusters):
-            COV.append(np.cov(X[labels == i].T))
-        COV = np.array(COV)
+        #COV = []
+        #for i in xrange(self.clusters):
+        #    COV.append(np.cov(X[labels == i].T))
+        #COV = np.array(COV)
+        COV = np.cov(X.T, aweights=self.weights)
         PREC = np.linalg.inv(COV)
         return PREC
 
@@ -161,9 +184,11 @@ class Directions:
         """
         DISTR_1 = []
         #DISTR_0 = []
-        for idx in xrange(self.clusters):
-            DISTR_1.append(self.Pi_1[idx] * self._prob_of_belong(X, self.C_1[idx], self.PREC_1[idx]))
+        #for idx in xrange(self.clusters):
+            #DISTR_1.append(self.Pi_1[idx] * self._prob_of_belong(X, self.C_1[idx], self.PREC_1[idx]))
             #DISTR_0.append(self.Pi_0[idx] * self._prob_of_belong(X, self.C_0[idx], self.PREC_0[idx]))
+        #print self.C_1
+        DISTR_1.append(self.Pi_1 * self._prob_of_belong(X, self.C_1, self.PREC_1))        
         DISTR_1 = np.array(DISTR_1)
         #DISTR_0 = np.array(DISTR_0)
         model_1_s = np.sum(DISTR_1, axis=0)
@@ -196,8 +221,8 @@ class Directions:
         for x_c in X_C:
             c_dist_x.append(np.dot(np.dot(x_c.T, PREC), x_c))
         c_dist_x = np.array(c_dist_x)
-        return 1 - st.chi2.cdf(c_dist_x, len(C))
-
+        #return 1 - st.chi2.cdf(c_dist_x, len(C))
+        return 1 - st.chi2.cdf(c_dist_x, 1)
 
     def rmse(self, path):
         """
@@ -211,6 +236,22 @@ class Directions:
         X, target = self.transform_data(path)
         y = self.predict(X)
         return np.sqrt(np.mean((y - target) ** 2.0))
+
+
+    def my_rmse(self, target, prediction):
+        return np.sqrt(np.mean((prediction - target) ** 2.0))
+
+
+    def calc_weights(self, list_of_predictions, list_of_errors):
+
+       
+        temp = np.zeros(len(list_of_predictions[0]))
+        denominator = 0
+        for i in range(len(list_of_predictions)):
+            temp += list_of_predictions[i]/list_of_errors[i]
+            denominator += 1/list_of_errors[i]
+        return temp/denominator
+            
 
 
     def _create_X(self, data):
