@@ -88,10 +88,11 @@ def complex_numbers_batch(T, S, W):
     #print('mam Gs')
     #G = np.mean(Gs, axis=1)
     # this is for RAM optimized version
-    t, s = sum_by_times(T, S)
+    #t, s = sum_by_times(T, S)   removed sum_by_times
     G = []
     for i in xrange(len(W)):
-        Gs = s * (np.e ** (W[i] * t * (-1j) * np.pi * 2))
+        #Gs = s * (np.e ** (W[i] * t * (-1j) * np.pi * 2))
+        Gs = S * (np.e ** (W[i] * T * (-1j) * np.pi * 2))
         G.append(np.mean(Gs))
     G = np.array(G)
     return G
@@ -142,8 +143,8 @@ def build_frequencies(longest, shortest):  # should be part of initialization of
     uses: np.arange()
     objective: to find frequencies w_0 to w_k
     """
-    k = int(longest / shortest) + 1
-    W = np.float64(np.arange(k)) / float(longest)
+    k = int(longest / shortest)  # + 1
+    W = np.float64(np.arange(k) + 1) / float(longest) # removed zero periodicity
     return W
 
 
