@@ -84,12 +84,4 @@ class Directions:
         """
         dataset=np.loadtxt(path)
         X = self._create_X(dataset[:, : -1])
-        target = dataset[:, -1]
-        if for_fremen:
-            return X, target, dataset[:, 0]
-        else:
-            return X, target
-
-
-    def my_transform_data(self, dataset, for_fremen=False):
-        """
+     
