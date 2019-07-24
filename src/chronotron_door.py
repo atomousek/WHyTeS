@@ -4,7 +4,7 @@ import directions
 import matplotlib.pyplot as plt
 
 
-path  = '../data/training_data_short.txt'
+path  = '../data/training_data.txt'
 
 longest = 14*24*60*60
 shortest = 60*60
@@ -86,7 +86,8 @@ for i in xrange(10):
  
     
     plt.plot(prediction_fremen)
-    #plt.scatter(target)
+    plt.plot(dataset[:, -1])
+    #plt.scatter(target_fremen)
     plt.ylim(ymax = 1.2, ymin = -0.1)
     plt.savefig('srovnani_hodnot_uhly_vse'+str(i)+'.png')
     plt.close()
