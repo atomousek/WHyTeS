@@ -20,16 +20,17 @@ def make_video (data):
         name = str(times[i])
         counter = 0
         while k < len(data[:, 0]) and times[i] == data[k, 0]:
-            if data[k, 3] == 0:
+            if data[k, 3] == 1:
                 cv2.circle(frame, (int(data[k, 2] + abs(y_min))*10, int(data[k, 1] + abs(x_min))*10), 2, (255, 0, 0), 1)
                 counter += 1
             k += 1
-        #cv2.circle(frame, (frame,  150), 5, (0, 0, 255), 5)
+        frame = cv2.putText(frame, name, (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), lineType=cv2.LINE_4)
         out.write(frame)
 
         #if counter > 5:
             #filename = "%s.png" % name
-            #cv2.imwrite(filename, frame)
+            #cv2.imwrite('test_output_50_200.png', frame)
+            #break
             #out.write(frame)
 
     cv2.destroyAllWindows()
@@ -37,7 +38,7 @@ def make_video (data):
 
     return 0
 
-path = '../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt'
+path = '../data/data_for_visualization/wednesday_thursday_days_nights_rounded_only_ones.txt'
 
 dataset = np.loadtxt(path)
 #dataset = dataset[0:439724]
