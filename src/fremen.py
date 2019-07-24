@@ -74,7 +74,7 @@ def chosen_period(T, S, W):
     return P, sum_of_amplitudes
 
 
-def complex_numbers_batch(T, S, W):
+def complex_numbers_batch(T, S, W, weights):
     """
     input: T numpy array Nx1, time positions of measured values
            S numpy array Nx1, sequence of measured values
@@ -92,7 +92,7 @@ def complex_numbers_batch(T, S, W):
     G = []
     for i in xrange(len(W)):
         #Gs = s * (np.e ** (W[i] * t * (-1j) * np.pi * 2))
-        Gs = S * (np.e ** (W[i] * T * (-1j) * np.pi * 2))
+        Gs = weights * S * (np.e ** (W[i] * T * (-1j) * np.pi * 2))
         G.append(np.mean(Gs))
     G = np.array(G)
     return G
