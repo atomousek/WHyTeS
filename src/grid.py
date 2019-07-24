@@ -44,10 +44,10 @@ def get_domain(dataset, edges_of_cell, edges_of_big_cell):
             domain_sums ... numpy array, sums of measured values
     """
     extended_shape_of_grid, uniform_histogram_bools = get_uniform_data(dataset[:, 0: -1], edges_of_cell, edges_of_big_cell)
-    domain_coordinates, shift = get_coordinates(dataset[:, 0: -1], extended_shape_of_grid, uniform_histogram_bools)
+    domain_coordinates, shift, precision = get_coordinates(dataset[:, 0: -1], extended_shape_of_grid, uniform_histogram_bools)
     domain_sums = get_sums(dataset, extended_shape_of_grid, uniform_histogram_bools)
     #print(np.sum(dataset[:, -1]))
-    return np.float64(domain_coordinates)/np.array([100.0, 100000.0, 100000.0]) + shift, domain_sums
+    return np.float64(domain_coordinates)/precision + shift, domain_sums
     
     
 def get_occupied_coor(data, edges_of_big_cell):
@@ -105,24 +105,30 @@ def get_coordinates(data, extended_shape_of_grid, uniform_histogram_bools):
                                       normed=False, weights=None)[1]
     central_points = []
     shift = []
+    precision = []
     for i in range(len(edges)):
         step_lenght = (edges[i][-1] - edges[i][0]) / (len(edges[i] - 1))
         if i == 0:
-            tmp = np.uint32((np.array(edges[i][0: -1]) - edges[i][0]) * 100.0)
+            prec = 100.0
+            tmp = np.uint32((np.array(edges[i][0: -1]) - edges[i][0]) * prec)
             shift.append(edges[i][0] + step_lenght / 2.0)
             #tmp = np.array(edges[i][0: -1] + step_lenght / 2.0, dtype=np.uint32)
             #shift.append(0.0)
+            precision.append(prec)
         else:
-            tmp = np.uint32((np.array(edges[i][0: -1]) - edges[i][0]) * 100000.0)
+            prec = 100000.0
+            tmp = np.uint32((np.array(edges[i][0: -1]) - edges[i][0]) * prec)
             shift.append(edges[i][0] + step_lenght / 2.0)
+            precision.append(prec)
         central_points.append(tmp)
     shift = np.array(shift)
+    precision = np.array(precision)
     #coordinates = cartesian_product(*central_points)
     #domain_coordinates = coordinates[uniform_histogram_bools]
     coordinates = cartesian_product(*central_points)[uniform_histogram_bools]
     #print('delka koordinatu pred filtraci: ' + str(len(uniform_histogram_bools)))
     #print('delka koordinatu po filtraci: ' + str(np.sum(uniform_histogram_bools*1.0)))
-    return coordinates, shift
+    return coordinates, shift, precision
 
 
 def get_frequencies(data, extended_shape_of_grid, uniform_histogram_bools):
