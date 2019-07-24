@@ -1,6 +1,7 @@
 from sklearn.mixture import GaussianMixture
 import transformation as tr
 import grid
+import full_grid as fg
 #import fremen
 #import transformation_with_dirs as tr
 #import grid_with_directions as grid
@@ -11,6 +12,7 @@ import scipy.stats as st
 import numpy as np
 import matplotlib.patches as pat
 import pandas as pd
+import scipy.misc as sm
 
 
 class Frequencies:
@@ -104,6 +106,7 @@ class Frequencies:
         for idx in xrange(self.clusters):
             DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
         return np.array(DISTR).max(axis=0)
+        #return np.array(DISTR).sum(axis=0)
 
 
     def _prob_of_belong(self, X, C, PREC):
@@ -119,24 +122,15 @@ class Frequencies:
         return 1 - st.chi2.cdf(c_dist_x, len(C))
 
 
-    def transform_data(self, path, for_fremen=False):
-        #gridded, target = grid.get_domain(np.loadtxt(path), self.edges_of_cell, self.edges_of_cell)
-        #X = tr.create_X(gridded, self.structure)
-        ##############################################
-        # not working with fremen, need to rewrite !!!!
-        X = tr.create_X(np.loadtxt(path)[:, : -1], self.structure)
-        target = np.loadtxt(path)[:, -1]
-        if for_fremen:
-            return X, target, gridded[:, 0]
-        else:
-            return X, target
+    def transform_data(self, path):
+        gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
+        X = tr.create_X(gridded, self.structure)
+        return X, target
 
 
     def rmse(self, path, plot_it=False):
         X, target = self.transform_data(path)
-        #print(np.sum(target))
         y = self.predict(X)
-        #print(np.sum(y))
         if plot_it:
             ll = len(target)
             plt.scatter(range(ll), target, color='b', marker="s", s=1, edgecolor="None")
@@ -146,5 +140,13 @@ class Frequencies:
             plt.savefig('srovnani_hodnot_uhly_vse.png')
             plt.close()
         return np.sqrt(np.mean((y - target) ** 2.0))
+
+
+    def poisson(self, path):
+        X, K = self.transform_data(path)
+        Lambda = self.predict(X)
+        probs = st.poisson.cdf(K, Lambda)
+        return probs
+        
 
 

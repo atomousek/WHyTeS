@@ -10,7 +10,7 @@ import numpy as np
 #list_of_periodicities = [21600.0, 43200.0, 86400.0]  # the most prominent periods, found by FreMEn
 
 # load and train the predictor
-freqs = frequencies.Frequencies()
+freqs = frequencies.Frequencies(edges_of_cell = np.array([60.0, 1.0, 1.0]))
 #freqs = freqs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
 
 # predict values from dataset
@@ -23,3 +23,11 @@ print('manually calculated RMSE: ' + str(np.sqrt(np.mean((prediction - target) *
 
 # or calculate RMSE of prediction of values directly
 print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/wednesday_thursday_nights.txt')))
+
+# and now, something copletely defferent
+probs = freqs.poisson('../data/wednesday_thursday_nights.txt')
+print("poisson prosel!")
+
+print("pocet malych outlieru: " + str(len(probs[probs<0.05])))
+print("pocet velkych outlieru: " + str(len(probs[probs>0.95])))
+print("pocet vsech hodnot: " + str(len(probs)))

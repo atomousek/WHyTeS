@@ -4,38 +4,37 @@ from time import clock
 
 
 
-def get_full_grid(dataset, edges_of_cell, edges_of_big_cell):
+def get_full_grid(dataset, edges_of_cell):
     """
     input: dataset ... numpy array, timestemp, position in space, measured values
            edges_of_cell ... list, lengths of individual edges of smallest cell
            edges_of_big_cell ... list, lower resolution cells (creates surroundings of measured data)
-    output: domain_coordinates ... numpy array, "list" of coordinates of cells were some measurement was performed
+    output: coordinates ... numpy array, "list" of coordinates of cells were some measurement was performed
             domain_frequencies ... numpy array, number of measurements in each cell
-            domain_sums ... numpy array, sums of measured values
+            k_for_poisson ... numpy array, sums of measured values
     """
-    shape_of_grid, uniform_histogram_bools = get_uniform_data(dataset[:, 0: -1], edges_of_cell, edges_of_big_cell)
-    domain_coordinates, shift, precision = get_coordinates(dataset[:, 0: -1], shape_of_grid, uniform_histogram_bools)
-    domain_sums = get_sums(dataset, shape_of_grid, uniform_histogram_bools)
-    #print(np.sum(dataset[:, -1]))
-    return np.float64(domain_coordinates)/precision + shift, domain_sums
+    bins_and_ranges = get_bins_and_ranges(dataset[:, 0: -1], edges_of_cell)
+    coordinates, shift, precision = get_coordinates(dataset[:, 0: -1], bins_and_ranges)
+    frequencies = get_frequencies(dataset, bins_and_ranges)
+    return np.float64(coordinates)/precision + shift, frequencies
 
 
 
 
 
-def number_of_cells(data, edges_of_cell):
+def get_bins_and_ranges(data, edges_of_cell):
     """
     input: X numpy array nxd, matrix of measures
            edge_of_square float, length of the edge of 2D part of a "cell"
            timestep float, length of the time edge of a "cell"
-    output: shape_of_grid numpy array, number of edges on t, x, y, ... axis
+    output: bins_and_ranges numpy array, number of edges on t, x, y, ... axis
     uses:np.shape(), np.max(), np.min(),np.ceil(), np.int64()
     objective: find out number of cells in every dimension
     """
     # number of predefined cubes in the measured space
     # changed to exact length of timestep and edge of square
     # changed to general shape of cell
-    shape_of_grid = [[],[]]
+    bins_and_ranges = [[],[]]
     n, d = np.shape(data)
     for i in range(d):
         min_i = np.min(data[:, i])
@@ -46,18 +45,18 @@ def number_of_cells(data, edges_of_cell):
         half_residue = (edge_i - (range_i % edge_i)) / 2.0
         position_min =  min_i - half_residue
         position_max =  max_i + half_residue
-        shape_of_grid[0].append(int(number_of_bins))
-        shape_of_grid[1].append([position_min, position_max])
-    return shape_of_grid
+        bins_and_ranges[0].append(int(number_of_bins))
+        bins_and_ranges[1].append([position_min, position_max])
+    return bins_and_ranges
 
 
 
 
-def get_coordinates(data, shape_of_grid):
+def get_coordinates(data, bins_and_ranges):
     """
     """
-    edges = np.histogramdd(data, bins=shape_of_grid[0],
-                                      range=shape_of_grid[1],
+    edges = np.histogramdd(data, bins=bins_and_ranges[0],
+                                      range=bins_and_ranges[1],
                                       normed=False, weights=None)[1]
     central_points = []
     shift = []
@@ -83,14 +82,30 @@ def get_coordinates(data, shape_of_grid):
     return coordinates, shift, precision
 
 
-def get_sums(dataset, shape_of_grid):
+def get_frequencies(dataset, bins_and_ranges):
     """
     """
-    histogram = np.histogramdd(dataset[:, 0: -1], bins=shape_of_grid[0],
-                                      range=shape_of_grid[1],
+    frequencies = np.histogramdd(dataset[:, 0: -1], bins=bins_and_ranges[0],
+                                      range=bins_and_ranges[1],
                                       normed=False, weights=dataset[:, -1])[0]
-    histogram_sums = histogram.reshape(-1)
-    return histogram_sums
+    return frequencies.reshape(-1)
 
 
 
+
+def cartesian_product(*arrays):
+    """
+    downloaded from:
+    'https://stackoverflow.com/questions/11144513/numpy-cartesian-product-of'+\
+    '-x-and-y-array-points-into-single-array-of-2d-points'
+    input: *arrays enumeration of central_points
+    output: numpy array (central positions of cels of grid)
+    uses: np.empty(),np.ix_(), np.reshape()
+    objective: to perform cartesian product of values in columns
+    """
+    la = len(arrays)
+    arr = np.empty([len(a) for a in arrays] + [la],
+                   dtype=arrays[0].dtype)
+    for i, a in enumerate(np.ix_(*arrays)):
+        arr[..., i] = a
+    return arr.reshape(-1, la)
