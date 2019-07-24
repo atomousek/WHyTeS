@@ -278,4 +278,3 @@ class Directions:
                                        data[:, -1] * np.sin(data[:, -2])]
         return X
 
-

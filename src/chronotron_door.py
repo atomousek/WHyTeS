@@ -1,4 +1,4 @@
-import fremen
+i:mport fremen
 import numpy as np
 import directions
 import matplotlib.pyplot as plt
