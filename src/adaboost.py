@@ -20,3 +20,14 @@ dataset = np.loadtxt(path)
 
 #dataset.astype(int)
 #np.savetxt('new_training_data.txt', dataset)
+
+T = dataset[:, 0]
+S = dataset[:, -1]
+weights = np.ones(S.shape[0])
+weights = weights / S.shape[0]
+
+print weights[0]
+
+P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, weights)
+
+print P

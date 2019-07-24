@@ -40,7 +40,7 @@ import numpy as np
 from collections import defaultdict
 
 
-def chosen_period(T, S, W):
+def chosen_period(T, S, W, weights):
     """
     input: T numpy array Nx1, time positions of measured values
            time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
@@ -66,7 +66,7 @@ def chosen_period(T, S, W):
                timeseries are the residues between reality and model
     """
     # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
-    G = complex_numbers_batch(T, S, W)
+    G = complex_numbers_batch(T, S, W, weights)
     P = max_influence(W, G)
     # power spectral density ???
     sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
