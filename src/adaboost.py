@@ -27,7 +27,7 @@ def calc_error(dataset, classification, sample_weights):
     for i in range(dataset.shape[0]):
         error += sample_weights[i]*(dataset[i, 1] != classification[i])
         #wrong_classification += (dataset[i, 1] != classification[i])
-    return error #, wrong_classification
+    return error / sum(sample_weights) #, wrong_classification
  
 
 path  = '../data/new_training_data.txt'
@@ -96,5 +96,6 @@ for i in range(10):   # for each weak classifier
 
     for j in range(dataset.shape[0]):   # for each element in dataset
         sample_weights[j] = sample_weights[j]*np.e**(-1*alpha[i]*classification[j]*dataset[j, 1])
+    sample_weights = sample_weights / sum(sample_weights)
     print sum(sample_weights)
 
