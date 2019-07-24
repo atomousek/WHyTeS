@@ -14,7 +14,7 @@ def make_video (data):
 
     k = 0
     fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
-    out = cv2.VideoWriter('people.avi', fourcc, 1, (width, height))
+    out = cv2.VideoWriter('people.avi', fourcc, 20, (width, height))
     for i in xrange(number_of_frames):
         frame = cv2.cvtColor(np.full([height, width], 255, np.uint8), cv2.COLOR_GRAY2BGR)
         name = str(times[i])
@@ -25,21 +25,21 @@ def make_video (data):
                 counter += 1
             k += 1
         #cv2.circle(frame, (frame,  150), 5, (0, 0, 255), 5)
-        #out.write(frame)
+        out.write(frame)
 
-        if counter > 5:
-            filename = "%s.png" % name
+        #if counter > 5:
+            #filename = "%s.png" % name
             #cv2.imwrite(filename, frame)
-            out.write(frame)
+            #out.write(frame)
 
     cv2.destroyAllWindows()
     out.release()
 
     return 0
 
-path = '../data/two_weeks_days_nights_weekends.txt'
+path = '../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt'
 
 dataset = np.loadtxt(path)
-dataset = dataset[0:439724]
+#dataset = dataset[0:439724]
 
 make_video(dataset)
