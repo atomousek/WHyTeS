@@ -84,7 +84,7 @@ error = calc_error(dataset, prediction, sample_weights)
 
 alpha = []
 P = 86400
-for i in range(5):   # for each weak classifier
+for i in range(4):   # for each weak classifier
     print '----------------------------------------------------'
     P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
     print 'found periodicity: ' + str(P)
@@ -92,10 +92,10 @@ for i in range(5):   # for each weak classifier
     
     classification = classify(transformed_data, sample_weights)
     rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
-    print 'weighted rmse :' + str(rmse)   
+    print 'weighted rmse: ' + str(rmse)   
     error = calc_error(dataset, classification, sample_weights)
     errors.append(rmse)
-    print 'current error: ' + str(error)
+    print 'classification error: ' + str(error)
     alpha.append(0.5*np.log((1-error)/error))
 
     for j in range(dataset.shape[0]):   # for each element in dataset
@@ -105,13 +105,14 @@ for i in range(5):   # for each weak classifier
 
 #plt.plot(errors)
 #plt.show()
-strong_classification = np.array((dataset.shape[0],1), dtype=float)
+transformed_data = transform_data(dataset, 86400)
+strong_classification = np.zeros(dataset.shape[0], dtype=float)
 for i in range(len(classifiers)):
-    strong_classification += classifiers[i].predict(transformed_data[:, 0 : 2])
-
+    strong_classification += alpha[i]*classifiers[i].predict(transformed_data[:, 0: 2])
+    #print alpha[i]
 strong_classification = np.sign(strong_classification)
-
-print sum(strong_classification)
+print calc_error(dataset, strong_classification, np.ones(dataset.shape[0]))
+#print sum(strong_classification)
 
 
 
