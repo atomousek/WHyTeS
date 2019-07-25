@@ -80,7 +80,8 @@ class Frequencies:
 
 
     def _calibration(self, path, C, U, PREC):
-        DOMAIN = tr.create_X(grid.get_domain(np.loadtxt(path), self.edges_of_cell, self.edges_of_cell * 3)[0], self.structure)
+        #DOMAIN = tr.create_X(grid.get_domain(np.loadtxt(path), self.edges_of_cell, self.edges_of_cell * 3)[0], self.structure)
+        DOMAIN = tr.create_X(fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0], self.structure)
         F = []
         for idx in xrange(self.clusters):
             weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
@@ -105,8 +106,8 @@ class Frequencies:
         DISTR = []
         for idx in xrange(self.clusters):
             DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
-        return np.array(DISTR).max(axis=0)
-        #return np.array(DISTR).sum(axis=0)
+        #return np.array(DISTR).max(axis=0)
+        return np.array(DISTR).sum(axis=0)
 
 
     def _prob_of_belong(self, X, C, PREC):
@@ -131,6 +132,8 @@ class Frequencies:
     def rmse(self, path, plot_it=False):
         X, target = self.transform_data(path)
         y = self.predict(X)
+        print(np.sum(y))
+        print(np.sum(target))
         if plot_it:
             ll = len(target)
             plt.scatter(range(ll), target, color='b', marker="s", s=1, edgecolor="None")
@@ -145,7 +148,9 @@ class Frequencies:
     def poisson(self, path):
         X, K = self.transform_data(path)
         Lambda = self.predict(X)
+        #probs = st.poisson.cdf(K, Lambda)
         probs = st.poisson.cdf(K, Lambda)
+        probs[(probs>0.94) & (K==0)] = 0.5
         return probs
         
 
