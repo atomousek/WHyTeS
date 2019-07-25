@@ -10,7 +10,8 @@ import numpy as np
 #list_of_periodicities = [21600.0, 43200.0, 86400.0]  # the most prominent periods, found by FreMEn
 
 # load and train the predictor
-freqs = frequencies.Frequencies(train_path='../data/trenovaci_dva_tydny.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
+#freqs = frequencies.Frequencies(train_path='../data/trenovaci_dva_tydny.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
+freqs = frequencies.Frequencies(train_path='../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
 #freqs = freqs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
 
 
@@ -32,7 +33,8 @@ print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testov
 
 """
 # and now, something copletely defferent
-probs = freqs.poisson('../data/testovaci_dva_dny.txt')
+#probs = freqs.poisson('../data/testovaci_dva_dny.txt')
+probs = freqs.poisson('../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt')
 #probs = freqs.poisson('../data/trenovaci_dva_tydny.txt')
 print("poisson prosel!")
 
