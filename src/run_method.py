@@ -14,8 +14,8 @@ freqs = frequencies.Frequencies(train_path='../data/trenovaci_dva_tydny.txt', ed
 #freqs = freqs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
 
 
-print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/trenovaci_dva_tydny.txt')))
-print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testovaci_dva_dny.txt')))
+#print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/trenovaci_dva_tydny.txt')))
+#print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testovaci_dva_dny.txt')))
 
 """
 # predict values from dataset
@@ -32,8 +32,8 @@ print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testov
 
 """
 # and now, something copletely defferent
-#probs = freqs.poisson('../data/testovaci_dva_dny.txt')
-probs = freqs.poisson('../data/trenovaci_dva_tydny.txt')
+probs = freqs.poisson('../data/testovaci_dva_dny.txt')
+#probs = freqs.poisson('../data/trenovaci_dva_tydny.txt')
 print("poisson prosel!")
 
 print("pocet malych outlieru: " + str(len(probs[probs<0.05])))

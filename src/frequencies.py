@@ -151,6 +151,13 @@ class Frequencies:
         #probs = st.poisson.cdf(K, Lambda)
         probs = st.poisson.cdf(K, Lambda)
         probs[(probs>0.94) & (K==0)] = 0.5
+        ################## only for one-time visualisation #########
+        gridded = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0]
+        labels = np.zeros_like(probs)
+        labels[probs<0.05] = -1
+        labels[probs>0.95] = 1
+        out = np.c_[gridded, labels]
+        np.savetxt('../data/outliers.txt', out)
         return probs
         
 
