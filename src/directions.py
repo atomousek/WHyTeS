@@ -4,6 +4,9 @@ import numpy as np
 
 #import transformation_with_dirs as tr
 
+def my_rmse(target, prediction):
+        return np.sqrt(np.mean((prediction - target) ** 2.0))
+
 
 class Directions:
     """

@@ -1,5 +1,5 @@
 import fremen
-#import directions
+from directions import my_rmse
 import numpy as np
 #from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
@@ -13,8 +13,8 @@ def transform_data(data, periodicity):
     return X
 
 
-def classify(transformed_dataset):
-    clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(transformed_data[:, 0 : 2], transformed_data[:, -1])
+def classify(transformed_dataset, sample_weights):
+    clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
     prediction = clf.predict(transformed_data[:, 0 : 2])
 
     np.savetxt('pred.txt', prediction)
@@ -88,8 +88,9 @@ for i in range(10):   # for each weak classifier
     print 'found periodicity: ' + str(P)
     transformed_data = transform_data(dataset, P)
     
-    classification = classify(transformed_data)
-    
+    classification = classify(transformed_data, sample_weights)
+    rmse = my_rmse(dataset[:, -1], classification) 
+    print 'rmse :' + str(rmse)   
     error = calc_error(dataset, classification, sample_weights)
     print 'current error: ' + str(error)
     alpha.append(0.5*np.log((1-error)/error))
