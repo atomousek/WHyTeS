@@ -84,17 +84,17 @@ error = calc_error(dataset, prediction, sample_weights)
 
 alpha = []
 P = 86400
-for i in range(4):   # for each weak classifier
+for i in range(3):   # for each weak classifier
     print '----------------------------------------------------'
     P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
     print 'found periodicity: ' + str(P)
     transformed_data = transform_data(dataset, P)
     
     classification = classify(transformed_data, sample_weights)
-    rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
-    print 'weighted rmse: ' + str(rmse)   
+    weighted_rmse, rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
+    print 'weighted rmse: ' + str(weighted_rmse)   
     error = calc_error(dataset, classification, sample_weights)
-    errors.append(rmse)
+    #errors.append(rmse)
     print 'classification error: ' + str(error)
     alpha.append(0.5*np.log((1-error)/error))
 
@@ -111,7 +111,27 @@ for i in range(len(classifiers)):
     strong_classification += alpha[i]*classifiers[i].predict(transformed_data[:, 0: 2])
     #print alpha[i]
 strong_classification = np.sign(strong_classification)
-print calc_error(dataset, strong_classification, np.ones(dataset.shape[0]))
+print 'strong classifier classification error: ' + str(calc_error(dataset, strong_classification, np.ones(dataset.shape[0])))
+w_rmse, rmse =  my_rmse(dataset[:, -1], classification, sample_weights)
+print 'rmse: ' + str(rmse)
+
+no_of_wrong_ones = 0
+no_of_wrong_zeros = 0
+no_of_target_ones = 0
+for i in range(dataset.shape[0]):
+    if (dataset[i, 1] == 1) and (strong_classification[i] == -1):
+        no_of_wrong_ones += 1
+    if (dataset[i, 1] == -1 ) and (strong_classification[i] == 1):
+        no_of_wrong_ones += 1
+    if (dataset[i, 1] == 1):
+        no_of_target_ones += 1
+
+print 'number of ones classified as zero: ' + str(no_of_wrong_ones)
+print 'number of zeros classified as one: ' + str(no_of_wrong_zeros)
+print 'number of target ones: ' + str(no_of_target_ones)
+print dataset.shape
+print sum(dataset[:, 1]) 
+print sum(strong_classification)
 #print sum(strong_classification)
 
 

@@ -18,6 +18,7 @@ def my_rmse(target, prediction, sample_weights):   # weighted rmse
 
         return np.sqrt(sum(sample_weights*(_prediction - _target) ** 2.0))
         """
+        w_rmse = 0
         rmse = 0
         for i in range(prediction.shape[0]):
             tmp_pred = 0
@@ -30,9 +31,13 @@ def my_rmse(target, prediction, sample_weights):   # weighted rmse
                 tmp_target = 0
             else:
                 tmp_target = 1
-            rmse += sample_weights[i]*(tmp_pred - tmp_target)**2
+            w_rmse += sample_weights[i]*(tmp_pred - tmp_target)**2.0
             #print rmse
-        return np.sqrt(rmse)
+            rmse += (tmp_pred - tmp_target)**2.0
+        rmse = rmse / target.shape[0]
+        return np.sqrt(w_rmse), np.sqrt(rmse)
+        
+    
 
 class Directions:
     """
