@@ -6,6 +6,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn import datasets
 import matplotlib.pyplot as plt
 
+classifiers = []
+
 def transform_data(data, periodicity):
     X = np.empty((data.shape[0], 3))
     X[:, 2] = data[:, 1]
@@ -16,7 +18,7 @@ def transform_data(data, periodicity):
 def classify(transformed_dataset, sample_weights):
     clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
     prediction = clf.predict(transformed_data[:, 0 : 2])
-
+    classifiers.append(clf)
     np.savetxt('pred.txt', prediction)
     return prediction
 
@@ -40,7 +42,7 @@ list_of_periodicities = fremen.build_frequencies(longest, shortest)
 
 dataset = np.loadtxt(path)
 
-classifier_weights = []
+errors  = []
 
 #for i in range(dataset.shape[0]):
 #    if dataset[i, 1] == 0:
@@ -81,17 +83,18 @@ error = calc_error(dataset, prediction, sample_weights)
 #print clf.coef_
 
 alpha = []
-
-for i in range(10):   # for each weak classifier
+P = 86400
+for i in range(5):   # for each weak classifier
     print '----------------------------------------------------'
     P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
     print 'found periodicity: ' + str(P)
     transformed_data = transform_data(dataset, P)
     
     classification = classify(transformed_data, sample_weights)
-    rmse = my_rmse(dataset[:, -1], classification) 
-    print 'rmse :' + str(rmse)   
+    rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
+    print 'weighted rmse :' + str(rmse)   
     error = calc_error(dataset, classification, sample_weights)
+    errors.append(rmse)
     print 'current error: ' + str(error)
     alpha.append(0.5*np.log((1-error)/error))
 
@@ -99,4 +102,16 @@ for i in range(10):   # for each weak classifier
         sample_weights[j] = sample_weights[j]*np.e**(-1*alpha[i]*classification[j]*dataset[j, 1])
     sample_weights = sample_weights / sum(sample_weights)
     print sum(sample_weights)
+
+#plt.plot(errors)
+#plt.show()
+strong_classification = np.array((dataset.shape[0],1), dtype=float)
+for i in range(len(classifiers)):
+    strong_classification += classifiers[i].predict(transformed_data[:, 0 : 2])
+
+strong_classification = np.sign(strong_classification)
+
+print sum(strong_classification)
+
+
 

@@ -4,9 +4,35 @@ import numpy as np
 
 #import transformation_with_dirs as tr
 
-def my_rmse(target, prediction):
-        return np.sqrt(np.mean((prediction - target) ** 2.0))
+def my_rmse(target, prediction, sample_weights):   # weighted rmse
+        """
+        _prediction = prediction[:]
+        _target = target[:]
+        for i in range(_target.shape[0]):
+            if _target[i] == -1:
+                 _target[i] = 0
+        for i in range(_prediction.shape[0]):
+            if _prediction[i] == -1:
+                 _prediction[i] = 0
 
+
+        return np.sqrt(sum(sample_weights*(_prediction - _target) ** 2.0))
+        """
+        rmse = 0
+        for i in range(prediction.shape[0]):
+            tmp_pred = 0
+            tmp_target = 0
+            if prediction[i] == -1:
+                tmp_pred = 0
+            else:
+                tmp_pred = 1
+            if target[i] == -1:
+                tmp_target = 0
+            else:
+                tmp_target = 1
+            rmse += sample_weights[i]*(tmp_pred - tmp_target)**2
+            #print rmse
+        return np.sqrt(rmse)
 
 class Directions:
     """
