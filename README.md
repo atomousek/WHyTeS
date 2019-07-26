@@ -14,6 +14,7 @@ sklearn 0.20.3,
 SciPy 1.2.1,
 Cython 0.29.12
 gsl 2.4
+CythonGSL 0.2.2
 
 **example, how to run method:**
 $ python run_method.py ... will be included
