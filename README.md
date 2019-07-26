@@ -12,6 +12,8 @@ Python 2.7.15rc1,
 Numpy 1.16.3,
 sklearn 0.20.3,
 SciPy 1.2.1,
+Cython 0.29.12
+gsl 2.4
 
 **example, how to run method:**
 $ python run_method.py ... will be included
