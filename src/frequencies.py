@@ -5,6 +5,7 @@ import full_grid as fg
 #import fremen
 #import transformation_with_dirs as tr
 #import grid_with_directions as grid
+import integration
 
 
 import matplotlib.pyplot as plt
@@ -13,6 +14,8 @@ import numpy as np
 import matplotlib.patches as pat
 import pandas as pd
 import scipy.misc as sm
+
+#from time import clock
 
 
 class Frequencies:
@@ -30,7 +33,11 @@ class Frequencies:
 
     def _create_model(self, path):
         C, U, COV, PREC = self._get_params(path)
+        #start = clock()
         F = self._calibration(path, C, U, PREC)
+        #F = self._calibration_test(path, C, U, PREC)
+        #finish = clock()
+        #print(finish - start)
         return C, F, PREC
 
 
@@ -99,6 +106,39 @@ class Frequencies:
         F = np.array(F)
         return F  #, heights
 
+
+    def _calibration_test(self, path, C, U, PREC):
+        """
+        fast, somehow functional, but strange otput
+        """
+        X = np.loadtxt(path)[:, :-1]
+        bins_and_ranges = fg.get_bins_and_ranges(X, self.edges_of_cell)
+
+        no_bins = np.array(bins_and_ranges[0])
+        starting_points = np.array(bins_and_ranges[1])[:,0]
+        edges = self.edges_of_cell
+        periodicities = np.array(self.structure[2])
+        dim = np.shape(X)[1]
+        PI2 = np.pi
+
+        F = []
+        for idx in xrange(self.clusters):
+            #weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
+            weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C[idx], PREC[idx], PI2)
+            with np.errstate(divide='raise'):
+                try:
+                    #density = np.sum(U[idx]) / np.sum(weights)
+                    density = np.sum(U[idx]) / weights_sum
+                except FloatingPointError:
+                    print('vahy se souctem 0 nebo nevim')
+                    print('np.sum(weights))')
+                    print(np.sum(weights))
+                    print('np.sum(U[cluster]))')
+                    print(np.sum(U[idx]))
+                    density = 0
+            F.append(density)
+        F = np.array(F)
+        return F  #, heights
 
     def predict(self, X):
         """
