@@ -3,10 +3,9 @@ from directions import my_rmse
 import numpy as np
 #from sklearn import linear_model
 from sklearn.linear_model import LogisticRegression
-from sklearn import datasets
 import matplotlib.pyplot as plt
 
-classifiers = []
+#classifiers = []
 
 def transform_data(data, periodicity):
     X = np.empty((data.shape[0], 3))
@@ -18,10 +17,17 @@ def transform_data(data, periodicity):
 def classify(transformed_dataset, sample_weights):
     clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
     prediction = clf.predict(transformed_data[:, 0 : 2])
-    classifiers.append(clf)
+    #classifiers.append(clf)
     np.savetxt('pred.txt', prediction)
     return prediction
 
+def strong_classify(transformed_dataset,  alphas):
+    final_calssification = np.zeros(dataset.shape[0])
+    for i in range(len(alphas)):
+        #transformed_dataset = transform_data(dataset, periodicities[i])
+        final_classification += aplhas[i].classify(transformed_dataset, None)
+    return final_classification
+        
 
 def calc_error(dataset, classification, sample_weights):
     error = 0
@@ -86,13 +92,13 @@ alpha = []
 P = 86400
 for i in range(3):   # for each weak classifier
     print '----------------------------------------------------'
-    P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
+    #P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
     print 'found periodicity: ' + str(P)
     transformed_data = transform_data(dataset, P)
     
     classification = classify(transformed_data, sample_weights)
-    weighted_rmse, rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
-    print 'weighted rmse: ' + str(weighted_rmse)   
+    #weighted_rmse, rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
+    #print 'weighted rmse: ' + str(weighted_rmse)   
     error = calc_error(dataset, classification, sample_weights)
     #errors.append(rmse)
     print 'classification error: ' + str(error)
@@ -106,14 +112,16 @@ for i in range(3):   # for each weak classifier
 #plt.plot(errors)
 #plt.show()
 transformed_data = transform_data(dataset, 86400)
-strong_classification = np.zeros(dataset.shape[0], dtype=float)
-for i in range(len(classifiers)):
-    strong_classification += alpha[i]*classifiers[i].predict(transformed_data[:, 0: 2])
+#strong_classification = np.zeros(dataset.shape[0], dtype=float)
+#for i in range(len(classifiers)):
+#    strong_classification += alpha[i]*classifiers[i].predict(transformed_data[:, 0: 2])
     #print alpha[i]
-strong_classification = np.sign(strong_classification)
+#strong_classification = np.sign(strong_classification)
 print 'strong classifier classification error: ' + str(calc_error(dataset, strong_classification, np.ones(dataset.shape[0])))
-w_rmse, rmse =  my_rmse(dataset[:, -1], classification, sample_weights)
-print 'rmse: ' + str(rmse)
+#w_rmse, rmse =  my_rmse(dataset[:, -1], classification, sample_weights)
+#print 'rmse: ' + str(rmse)
+
+strong_classification = strong_classify(transformed_data, alpha)
 
 no_of_wrong_ones = 0
 no_of_wrong_zeros = 0
@@ -130,8 +138,6 @@ print 'number of ones classified as zero: ' + str(no_of_wrong_ones)
 print 'number of zeros classified as one: ' + str(no_of_wrong_zeros)
 print 'number of target ones: ' + str(no_of_target_ones)
 print dataset.shape
-print sum(dataset[:, 1]) 
-print sum(strong_classification)
 #print sum(strong_classification)
 
 
