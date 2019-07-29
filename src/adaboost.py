@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 classifiers = []
 
 
-def my_rmse(target, prediction, sample_weights):   # weighted rmse
+def calc_rmse(target, prediction, sample_weights):   # weighted rmse
         """
         _prediction = prediction[:]
         _target = target[:]
@@ -55,10 +55,11 @@ def classify(transformed_data, sample_weights):
     return prediction
 
 
-def strong_classify(transformed_dataset, alphas):
-    final_classification = np.zeros(transformed_dataset.shape[0])
+def strong_classify(dataset, alphas, periodicities):
+    w = np.ones(dataset.shape[0])/dataset.shape[0]
+    final_classification = np.zeros(dataset.shape[0])
     for i in range(len(alphas)):
-        #transformed_dataset = transform_data(dataset, periodicities[i])
+        transformed_dataset = transform_data(dataset, periodicities[i])
         final_classification += alphas[i]*classify(transformed_dataset, None)
     return final_classification
         
@@ -77,6 +78,7 @@ def boost(classifiers_number, periodicity = -1):
     longest = 14*24*60*60
     shortest = 60*60
     list_of_periodicities = fremen.build_frequencies(longest, shortest)
+    chosen_periodicities = []
 
     path  = '../data/new_training_data.txt'
     dataset = np.loadtxt(path)
@@ -96,16 +98,18 @@ def boost(classifiers_number, periodicity = -1):
             P, sum_of_amplitudes = fremen.chosen_period(T, S, list_of_periodicities, sample_weights)
         else:
             P = periodicity
+        chosen_periodicities.append(P)
         print 'found periodicity: ' + str(P)
         
         transformed_data = transform_data(dataset, P)
         classification = classify(transformed_data, sample_weights)
-        #weighted_rmse, rmse = my_rmse(dataset[:, -1], classification, sample_weights) 
-        #print 'weighted rmse: ' + str(weighted_rmse)   
+        weighted_rmse, rmse = calc_rmse(dataset[:, -1], classification, sample_weights) 
+        print 'weighted rmse: ' + str(weighted_rmse)   
         error = calc_error(dataset, classification, sample_weights)
         
         print 'weighted classification error: ' + str(error)
         alphas.append(0.5*np.log((1-error)/error))
+        print 'aplha: ' + str(alphas[i])
 
         for j in range(dataset.shape[0]):   # for each element in dataset
             sample_weights[j] = sample_weights[j]*np.e**(-1*alphas[i]*classification[j]*dataset[j, 1])
@@ -113,7 +117,7 @@ def boost(classifiers_number, periodicity = -1):
         
         print sum(sample_weights)
         
-    return alphas
+    return alphas, chosen_periodicities
 
 
 
