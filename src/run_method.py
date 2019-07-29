@@ -1,27 +1,38 @@
+from adaboost import transform_data, boost, strong_classify
+from sklearn.linear_model import LogisticRegression
+import numpy as np 
+
+alphas = boost(3)
+
+path  = '../data/new_training_data.txt'
+dataset = np.loadtxt(path)
+
+transformed_data = transform_data(dataset, 86400)
+#strong_classification = np.zeros(dataset.shape[0], dtype=float)
+
 """
-this is an example, how to run the method
+for i in range(len(classifiers)):
+    strong_classification += alphas[i]*classifiers[i].predict(transformed_data[:, 0: 2])
+    print alphas[i]
+strong_classification = np.sign(strong_classification)
+print 'strong classifier classification error: ' + str(calc_error(dataset, strong_classification, np.ones(dataset.shape[0])))
 """
-import directions
-import numpy as np
 
-# parameters for the method
-number_of_clusters = 3
-number_of_spatial_dimensions = 2  # known from data
-list_of_periodicities = [21600.0, 43200.0, 86400.0]  # the most prominent periods, found by FreMEn
-movement_included = True  # True, if last two columns of dataset are phi and v, i.e., the angle and speed of human.
-structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodicities, movement_included]  # suitable input
+strong_classification = strong_classify(transformed_data, alphas)
 
-# load and train the predictor
-dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
-dirs = dirs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
+no_of_wrong_ones = 0
+no_of_wrong_zeros = 0
+no_of_target_ones = 0
 
-# predict values from dataset
-# first transform data and get target values
-X, target = dirs.transform_data('../data/wednesday_thursday_nights_with_angles_plus_reversed.txt')
-# than predict values
-prediction = dirs.predict(X)
-# now, you can compare target and prediction in any way, for example RMSE
-print('manually calculated RMSE: ' + str(np.sqrt(np.mean((prediction - target) ** 2.0))))
+for i in range(dataset.shape[0]):
+    if (dataset[i, 1] == 1) and (strong_classification[i] == -1):
+        no_of_wrong_ones += 1
+    if (dataset[i, 1] == -1) and (strong_classification[i] == 1):
+        no_of_wrong_zeroes += 1
+    if (dataset[i, 1] == 1):
+        no_of_target_ones += 1
 
-# or calculate RMSE of prediction of values directly
-print('RMSE between target and prediction is: ' + str(dirs.rmse('../data/wednesday_thursday_nights_with_angles_plus_reversed.txt')))
+print 'number of ones classified as zero: ' + str(no_of_wrong_ones)
+print 'number of zeros classified as one: ' + str(no_of_wrong_zeros)
+print 'number of target ones: ' + str(no_of_target_ones)
+print dataset.shape
