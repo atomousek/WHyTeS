@@ -109,7 +109,7 @@ def boost(classifiers_number, periodicity = -1):
         
         print 'weighted classification error: ' + str(error)
         alphas.append(0.5*np.log((1-error)/error))
-        print 'aplha: ' + str(alphas[i])
+        print 'alpha: ' + str(alphas[i])
 
         for j in range(dataset.shape[0]):   # for each element in dataset
             sample_weights[j] = sample_weights[j]*np.e**(-1*alphas[i]*classification[j]*dataset[j, 1])
