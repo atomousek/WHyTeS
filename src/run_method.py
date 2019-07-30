@@ -8,13 +8,13 @@ alphas, chosen_periodicities = boost(5)
 path  = '../data/new_training_data.txt'
 dataset = np.loadtxt(path)
 
-transformed_data = transform_data(dataset, 86400)
 
 strong_classification = strong_classify(dataset, alphas, chosen_periodicities)
 np.savetxt('strong_classification.txt', strong_classification)
-strong_classification = np.sign(strong_classification)
-#strong_classification = sigmoid(strong_classification)
+#strong_classification = np.sign(strong_classification)
+strong_classification = sigmoid(strong_classification)
 
+"""
 no_of_wrong_ones = 0
 no_of_wrong_zeros = 0
 no_of_target_ones = 0
@@ -32,9 +32,10 @@ for i in range(dataset.shape[0]):
         zeros += 1
     if strong_classification[i] > 0:
         ones += 1
-
+"""
 #plt.plot(dataset[:, -1])
 #plt.plot(strong_classification)
+
 
 plt.subplot(2, 1, 1)
 plt.plot(dataset[:40000, -1])
@@ -42,13 +43,28 @@ plt.plot(dataset[:40000, -1])
 plt.subplot(2, 1, 2)
 plt.plot(strong_classification[:40000])
 
-plt.show()
-
-#plt.show()
-
 plt.savefig('plot.png')
 plt.close()
 
+for i in range(9):
+    target = np.loadtxt('../data/test_data_' + str(i) + '.txt')
+    X  = np.loadtxt('../data/test_times_' + str(i) + '.txt')
+    strong_classification = strong_classify(np.c_[X, target], alphas, chosen_periodicities)
+    strong_classification = sigmoid(strong_classification)
+
+    plt.subplot(2, 1, 1)
+    plt.plot(target)
+
+    plt.subplot(2, 1, 2)
+    plt.plot(strong_classification)
+
+    plt.savefig('plot_' + str(i) + '.png')
+    plt.close()
+
+    
+
+
+"""
 print zeros
 print ones
 print '----------------------------------------------------'
@@ -60,3 +76,4 @@ print 'classification error: ' + str(calc_error(dataset, strong_classification, 
 w_rmse_s, rmse_s = calc_rmse(dataset[:, -1], strong_classification, np.ones(dataset.shape[0])/dataset.shape[0])
 print 'rmse: ' + str(rmse_s)
 print dataset.shape
+"""

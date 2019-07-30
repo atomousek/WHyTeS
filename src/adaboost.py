@@ -5,24 +5,27 @@ import matplotlib.pyplot as plt
 
 classifiers = []
 
-def sigmoid(x):                                        
+def sigmoid(x):
+    """
+        input: numpy array
+        objective: applies sigmoid function elementwise
+        output: numpy array
+    """                                        
     return 1 / (1 + np.exp(-x))
 
 
 def calc_rmse(target, prediction, sample_weights):   # weighted rmse
-        """
-        _prediction = prediction[:]
-        _target = target[:]
-        for i in range(_target.shape[0]):
-            if _target[i] == -1:
-                 _target[i] = 0
-        for i in range(_prediction.shape[0]):
-            if _prediction[i] == -1:
-                 _prediction[i] = 0
+    
+    """
+        input: dataset target values - array
+               predicted values - array
+               weight of each sample/value - array
+        objective: caclulates rmse and weighted rmse
+        output: weighted rmse - float
+                rmse - float
+    """  
 
 
-        return np.sqrt(sum(sample_weights*(_prediction - _target) ** 2.0))
-        """
         w_rmse = 0
         rmse = 0
         for i in range(prediction.shape[0]):
@@ -44,6 +47,12 @@ def calc_rmse(target, prediction, sample_weights):   # weighted rmse
 
 
 def transform_data(data, periodicity):
+    """
+        input: whole dataset - multidimensional array
+               periodicity - integer
+        objective: warps dataset 
+        output: transformed dataset
+    """  
     X = np.empty((data.shape[0], 3))
     X[:, 2] = data[:, 1]
     X[:, 0 : 2] = np.c_[np.cos(data[:, 0] * 2 * np.pi / periodicity), np.sin(data[:, 0] * 2 * np.pi / periodicity)]
@@ -51,6 +60,16 @@ def transform_data(data, periodicity):
 
 
 def classify(transformed_data, sample_weights, proba):
+     """
+        input: transformed data - dataset transformed using transform_data() function - multidimensional array
+               sample_weights - weight of each sample/value from dataset - array
+               proba - either 1 or 0 - if 0 -> returns classification
+                                       else if 1 -> returns probability of given time being in each of classes 
+        objective: classify data
+        output: if proba is 0 then returns array of classifications
+                else if proba is 1 then returns array of probabilities of given times being in class '1'
+    """
+
     if proba == 1:
         clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
         prediction = clf.predict_proba(transformed_data[:, 0 : 2])
@@ -64,6 +83,14 @@ def classify(transformed_data, sample_weights, proba):
 
 
 def strong_classify(dataset, alphas, periodicities):
+     """
+        input: dataset
+               aplhas - weigh of each classifier - array
+               peridodicities - periodicity for each classifier - array
+        objective: combines weak classifiers into one strong classifier
+        output: prediction array of probabilites (values between 0 and 1)
+    """
+
     w = np.ones(dataset.shape[0])/dataset.shape[0]
     final_classification = np.zeros(dataset.shape[0])
     for i in range(len(alphas)):
@@ -73,6 +100,14 @@ def strong_classify(dataset, alphas, periodicities):
         
 
 def calc_error(dataset, classification, sample_weights):
+    """
+        input: dataset 
+               classification - array
+               sample weights - weight of each sample/value - array
+        objective: calculates weighted classification error
+        output: classification error
+    """
+
     error = 0
     #wrong_classification = 0
     for i in range(dataset.shape[0]):
@@ -82,7 +117,15 @@ def calc_error(dataset, classification, sample_weights):
  
 
 def boost(classifiers_number, periodicity = -1):
-    
+    """
+        ADABOOST
+        input: number of weak classifiers you want
+               custom periodicity
+        objective: calculates weight (alpha) for each weak classifier
+        output: weight for each classier - alphas - array
+                peridodicity for each classifier - chosen periodicity - array
+    """
+
     longest = 14*24*60*60
     shortest = 60*60
     list_of_periodicities = fremen.build_frequencies(longest, shortest)
