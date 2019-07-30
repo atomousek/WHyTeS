@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 
 classifiers = []
 
+def sigmoid(x):                                        
+    return 1 / (1 + np.exp(-x))
+
 
 def calc_rmse(target, prediction, sample_weights):   # weighted rmse
         """
@@ -47,9 +50,14 @@ def transform_data(data, periodicity):
     return X
 
 
-def classify(transformed_data, sample_weights):
-    clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
-    prediction = clf.predict(transformed_data[:, 0 : 2])
+def classify(transformed_data, sample_weights, proba):
+    if proba == 1:
+        clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
+        prediction = clf.predict_proba(transformed_data[:, 0 : 2])
+        prediction = prediction[:, 1]*2 - 1
+    elif proba == 0:
+        clf = LogisticRegression(solver='liblinear', multi_class='ovr', class_weight='balanced').fit(X=transformed_data[:, 0 : 2], y=transformed_data[:, -1], sample_weight=sample_weights)
+        prediction = clf.predict(transformed_data[:, 0 : 2])
     classifiers.append(clf)
     np.savetxt('pred.txt', prediction)
     return prediction
@@ -60,7 +68,7 @@ def strong_classify(dataset, alphas, periodicities):
     final_classification = np.zeros(dataset.shape[0])
     for i in range(len(alphas)):
         transformed_dataset = transform_data(dataset, periodicities[i])
-        final_classification += alphas[i]*classify(transformed_dataset, None)
+        final_classification += alphas[i]*classify(transformed_dataset, None, 1)
     return final_classification
         
 
@@ -102,7 +110,7 @@ def boost(classifiers_number, periodicity = -1):
         print 'found periodicity: ' + str(P)
         
         transformed_data = transform_data(dataset, P)
-        classification = classify(transformed_data, sample_weights)
+        classification = classify(transformed_data, sample_weights, 0)
         weighted_rmse, rmse = calc_rmse(dataset[:, -1], classification, sample_weights) 
         print 'weighted rmse: ' + str(weighted_rmse)   
         error = calc_error(dataset, classification, sample_weights)
