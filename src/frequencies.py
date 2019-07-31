@@ -15,7 +15,8 @@ import matplotlib.patches as pat
 import pandas as pd
 import scipy.misc as sm
 
-#from time import clock
+from time import clock
+import chi_sqr_gsl
 
 
 class Frequencies:
@@ -33,11 +34,11 @@ class Frequencies:
 
     def _create_model(self, path):
         C, U, COV, PREC = self._get_params(path)
-        #start = clock()
-        F = self._calibration(path, C, U, PREC)
-        #F = self._calibration_test(path, C, U, PREC)
-        #finish = clock()
-        #print(finish - start)
+        start = clock()
+        F = self._calibration_test(path, C, U, PREC)
+        #F = self._calibration(path, C, U, PREC)
+        finish = clock()
+        print(finish - start)
         return C, F, PREC
 
 
@@ -113,21 +114,18 @@ class Frequencies:
         """
         X = np.loadtxt(path)[:, :-1]
         bins_and_ranges = fg.get_bins_and_ranges(X, self.edges_of_cell)
-
         no_bins = np.array(bins_and_ranges[0])
-        starting_points = np.array(bins_and_ranges[1])[:,0]
+        starting_points = np.array(bins_and_ranges[1])[:,0] + (self.edges_of_cell * 0.5)
         edges = self.edges_of_cell
         periodicities = np.array(self.structure[2])
         dim = np.shape(X)[1]
-        PI2 = np.pi
+        PI2 = np.pi*2
 
         F = []
         for idx in xrange(self.clusters):
-            #weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
             weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C[idx], PREC[idx], PI2)
             with np.errstate(divide='raise'):
                 try:
-                    #density = np.sum(U[idx]) / np.sum(weights)
                     density = np.sum(U[idx]) / weights_sum
                 except FloatingPointError:
                     print('vahy se souctem 0 nebo nevim')
