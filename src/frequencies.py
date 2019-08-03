@@ -25,6 +25,10 @@ import multiprocessing
 
 
 def _pickle_method(m):
+    '''
+    copied from https://github.com/stratospark/food-101-keras/issues/10
+    '''
+
     if m.im_self is None:
         return getattr, (m.im_class, m.im_func.func_name)
     else:
@@ -144,7 +148,7 @@ class Frequencies:
         #F = np.array(F)
 
         copy_reg.pickle(types.MethodType, _pickle_method)
-        pool = mp.Pool(mp.cpu_count())
+        pool = mp.Pool(min(self.clusters, mp.cpu_count()))
 
         results = [pool.apply_async(self._get_density, (DOMAIN, C[i], U[i], PREC[i])) for i in xrange(self.clusters)]
 
@@ -203,7 +207,8 @@ class Frequencies:
         #DISTR = []
         #DISTR = np.empty((self.clusters, X.shape[0]))
         copy_reg.pickle(types.MethodType, _pickle_method)
-        pool = mp.Pool(mp.cpu_count())
+        pool = mp.Pool(min(self.clusters, mp.cpu_count()))
+        #pool = mp.Pool(3)
 
         results = [pool.apply_async(self._get_distrubition, (i, X)) for i in xrange(self.clusters)]
 
