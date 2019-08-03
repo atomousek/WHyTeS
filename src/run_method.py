@@ -2,7 +2,9 @@
 this is an example, how to run the method
 """
 import frequencies
+import frequencies_no_parallelization as nop
 import numpy as np
+from time import clock
 
 # parameters for the method
 #number_of_clusters = 3
@@ -11,13 +13,31 @@ import numpy as np
 
 # load and train the predictor
 #freqs = frequencies.Frequencies(train_path='../data/trenovaci_dva_tydny.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
+start = clock()
 freqs = frequencies.Frequencies(train_path='../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt', edges_of_cell=np.array([3600.0, 0.1, 0.1]))
+finish = clock()
+print('new version create time: ' + str(finish-start))
 #freqs = freqs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
 
 
+start = clock()
 print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt')))
+finish = clock()
+print('new rmse time: ' + str(finish-start))
 #print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/trenovaci_dva_tydny.txt')))
 #print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testovaci_dva_dny.txt')))
+
+
+
+
+start = clock()
+freqs = nop.Frequencies(train_path='../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt', edges_of_cell=np.array([3600.0, 0.1, 0.1]))
+finish = clock()
+print('old version create time: ' + str(finish-start))
+start = clock()
+print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt')))
+finish = clock()
+print('new rmse time: ' + str(finish-start))
 
 """
 # predict values from dataset

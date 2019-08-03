@@ -216,7 +216,10 @@ class Frequencies:
 
     def rmse(self, path, plot_it=False):
         X, target = self._transform_data_over_grid(path)
+        start = clock()
         y = self._predict_probabilities(X)
+        finish = clock()
+        print('rmse: ' + str(finish-start))
         print(np.sum(y))
         print(np.sum(target))
         if plot_it:
