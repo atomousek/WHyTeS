@@ -79,10 +79,15 @@ class Frequencies:
 
 
     def _recalculate_precisions(self, X, labels):
-        COV = []
+        #COV = []
+        dim = X.shape[1]
+        COV = np.empty((self.clusters, dim, dim))
         for i in xrange(self.clusters):
-            COV.append(np.cov(X[labels == i].T))
-        COV = np.array(COV)
+            #COV.append(np.cov(X[labels == i].T))
+            COV[i] = np.cov(X[labels == i].T)
+        #COV = np.array(COV)
+        #print('X in precision: ' + str(np.shape(X)))
+        #print('COV in precision: ' + str(np.shape(COV)))
         PREC = np.linalg.inv(COV)
         return PREC, COV
 
@@ -90,7 +95,8 @@ class Frequencies:
     def _calibration(self, path, C, U, PREC):
         #DOMAIN = tr.create_X(grid.get_domain(np.loadtxt(path), self.edges_of_cell, self.edges_of_cell * 3)[0], self.structure)
         DOMAIN = tr.create_X(fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0], self.structure)
-        F = []
+        #F = []
+        F = np.empty(self.clusters)
         for idx in xrange(self.clusters):
             weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
             with np.errstate(divide='raise'):
@@ -103,8 +109,9 @@ class Frequencies:
                     print('np.sum(U[cluster]))')
                     print(np.sum(U[idx]))
                     density = 0
-            F.append(density)
-        F = np.array(F)
+            #F.append(density)
+            F[idx] = density
+        #F = np.array(F)
         return F  #, heights
 
 
@@ -141,11 +148,16 @@ class Frequencies:
     def predict(self, X):
         """
         """
-        DISTR = []
+        #DISTR = []
+        DISTR = np.empty((self.clusters, X.shape[0]))
         for idx in xrange(self.clusters):
-            DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
+            #DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
+            DISTR[idx] = self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
         #return np.array(DISTR).max(axis=0)
-        return np.array(DISTR).sum(axis=0)
+        #print('X in predict: ' + str(np.shape(X)))
+        #print('DISTR in predict: ' + str(np.shape(np.array(DISTR))))
+        #return np.array(DISTR).sum(axis=0)
+        return DISTR.sum(axis=0)
 
 
     def _prob_of_belong(self, X, C, PREC):
