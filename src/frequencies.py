@@ -48,8 +48,8 @@ class Frequencies:
     def _create_model(self, path):
         C, U, COV, PREC = self._get_params(path)
         start = clock()
-        F = self._calibration_test(path, C, U, PREC)
-        #F = self._calibration(path, C, U, PREC)
+        #F = self._calibration_test(path, C, U, PREC)
+        F = self._calibration(path, C, U, PREC)
         finish = clock()
         print(finish - start)
         return C, F, PREC
@@ -105,26 +105,55 @@ class Frequencies:
         return PREC, COV
 
 
+    def _get_density(self, DOMAIN, C, U, P):
+        weights = self._prob_of_belong(DOMAIN, C, P)
+        with np.errstate(divide='raise'):
+            try:
+                density = np.sum(U) / np.sum(weights)
+            except FloatingPointError:
+                print('vahy se souctem 0 nebo nevim')
+                print('np.sum(weights))')
+                print(np.sum(weights))
+                print('np.sum(U[cluster]))')
+                print(np.sum(U))
+                density = 0
+        # F.append(density)
+        return density
+
     def _calibration(self, path, C, U, PREC):
         #DOMAIN = tr.create_X(grid.get_domain(np.loadtxt(path), self.edges_of_cell, self.edges_of_cell * 3)[0], self.structure)
         DOMAIN = tr.create_X(fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0], self.structure)
         #F = []
-        F = np.empty(self.clusters)
-        for idx in xrange(self.clusters):
-            weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
-            with np.errstate(divide='raise'):
-                try:
-                    density = np.sum(U[idx]) / np.sum(weights)
-                except FloatingPointError:
-                    print('vahy se souctem 0 nebo nevim')
-                    print('np.sum(weights))')
-                    print(np.sum(weights))
-                    print('np.sum(U[cluster]))')
-                    print(np.sum(U[idx]))
-                    density = 0
-            #F.append(density)
-            F[idx] = density
+
+        #F = np.empty(self.clusters)
+        # for idx in xrange(self.clusters):
+        #     weights = self._prob_of_belong(DOMAIN, C[idx], PREC[idx])
+        #     with np.errstate(divide='raise'):
+        #         try:
+        #             density = np.sum(U[idx]) / np.sum(weights)
+        #         except FloatingPointError:
+        #             print('vahy se souctem 0 nebo nevim')
+        #             print('np.sum(weights))')
+        #             print(np.sum(weights))
+        #             print('np.sum(U[cluster]))')
+        #             print(np.sum(U[idx]))
+        #             density = 0
+        #     #F.append(density)
+        #     F[idx] = density
+
         #F = np.array(F)
+
+        copy_reg.pickle(types.MethodType, _pickle_method)
+        pool = mp.Pool(mp.cpu_count())
+
+        results = [pool.apply_async(self._get_density, (DOMAIN, C[i], U[i], PREC[i])) for i in xrange(self.clusters)]
+
+        pool.close()
+        pool.join()
+
+        F = [r.get() for r in results]
+        F = np.array(F)
+
         return F  #, heights
 
 
@@ -159,7 +188,7 @@ class Frequencies:
         return F  #, heights
 
 
-    def _distrubition(self, idx, X):
+    def _get_distrubition(self, idx, X):
         return self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
 
 
@@ -176,7 +205,7 @@ class Frequencies:
         copy_reg.pickle(types.MethodType, _pickle_method)
         pool = mp.Pool(mp.cpu_count())
 
-        results = [pool.apply_async(self._distrubition, (i, X)) for i in xrange(self.clusters)]
+        results = [pool.apply_async(self._get_distrubition, (i, X)) for i in xrange(self.clusters)]
 
         pool.close()
         pool.join()
