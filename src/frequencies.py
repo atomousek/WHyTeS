@@ -52,8 +52,8 @@ class Frequencies:
     def _create_model(self, path):
         C, U, COV, PREC = self._get_params(path)
         start = clock()
-        #F = self._calibration_test(path, C, U, PREC)
-        F = self._calibration(path, C, U, PREC)
+        F = self._calibration_test(path, C, U, PREC)
+        #F = self._calibration(path, C, U, PREC)
         finish = clock()
         print(finish - start)
         return C, F, PREC
@@ -161,6 +161,21 @@ class Frequencies:
         return F  #, heights
 
 
+    def _get_density_test(self,C, U, P, edges, no_bins, starting_points, periodicities, dim, PI2):
+        weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C, P, PI2)
+        with np.errstate(divide='raise'):
+            try:
+                density = np.sum(U) / weights_sum
+            except FloatingPointError:
+                print('vahy se souctem 0 nebo nevim')
+                print('np.sum(weights))')
+                print weights_sum
+                print('np.sum(U[cluster]))')
+                print(np.sum(U))
+                density = 0
+        return density
+
+
     def _calibration_test(self, path, C, U, PREC):
         """
         fast, somehow functional, but strange otput
@@ -174,21 +189,33 @@ class Frequencies:
         dim = np.shape(X)[1]
         PI2 = np.pi*2
 
-        F = []
-        for idx in xrange(self.clusters):
-            weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C[idx], PREC[idx], PI2)
-            with np.errstate(divide='raise'):
-                try:
-                    density = np.sum(U[idx]) / weights_sum
-                except FloatingPointError:
-                    print('vahy se souctem 0 nebo nevim')
-                    print('np.sum(weights))')
-                    print(np.sum(weights))
-                    print('np.sum(U[cluster]))')
-                    print(np.sum(U[idx]))
-                    density = 0
-            F.append(density)
+        # F = []
+        # for idx in xrange(self.clusters):
+        #     weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C[idx], PREC[idx], PI2)
+        #     with np.errstate(divide='raise'):
+        #         try:
+        #             density = np.sum(U[idx]) / weights_sum
+        #         except FloatingPointError:
+        #             print('vahy se souctem 0 nebo nevim')
+        #             print('np.sum(weights))')
+        #             print weights_sum
+        #             print('np.sum(U[cluster]))')
+        #             print(np.sum(U[idx]))
+        #             density = 0
+        #     F.append(density)
+        # F = np.array(F)
+
+        copy_reg.pickle(types.MethodType, _pickle_method)
+        pool = mp.Pool(min(self.clusters, mp.cpu_count()))
+
+        results = [pool.apply_async(self._get_density_test, (C[i], U[i], PREC[i], edges, no_bins, starting_points, periodicities, dim, PI2)) for i in xrange(self.clusters)]
+
+        pool.close()
+        pool.join()
+
+        F = [r.get() for r in results]
         F = np.array(F)
+
         return F  #, heights
 
 
@@ -196,7 +223,7 @@ class Frequencies:
         return self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
 
 
-    def _predict_probabilities(self, X):
+    def predict_probabilities(self, X):
         """
         there are two problems of thos function:
         1) this shoud be helper method
@@ -242,16 +269,16 @@ class Frequencies:
         return 1 - st.chi2.cdf(c_dist_x, len(C))
 
 
-    def _transform_data_over_grid(self, path):
+    def transform_data_over_grid(self, path):
         gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
         X = tr.create_X(gridded, self.structure)
         return X, target
 
 
     def rmse(self, path, plot_it=False):
-        X, target = self._transform_data_over_grid(path)
+        X, target = self.transform_data_over_grid(path)
         start = clock()
-        y = self._predict_probabilities(X)
+        y = self.predict_probabilities(X)
         finish = clock()
         print('rmse: ' + str(finish-start))
         print(np.sum(y))
