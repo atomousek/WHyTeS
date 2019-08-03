@@ -145,8 +145,13 @@ class Frequencies:
         F = np.array(F)
         return F  #, heights
 
-    def predict(self, X):
+    def _predict_probabilities(self, X):
         """
+        there are two problems of thos function:
+        1) this shoud be helper method
+        2) real _predict_probabilities accessible by user has to be prepared to:
+            a) input of 1 to n vectors
+            b) input of only "raw" vectors (there should be projection of X into hypertime)
         """
         #DISTR = []
         DISTR = np.empty((self.clusters, X.shape[0]))
@@ -154,8 +159,8 @@ class Frequencies:
             #DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
             DISTR[idx] = self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
         #return np.array(DISTR).max(axis=0)
-        #print('X in predict: ' + str(np.shape(X)))
-        #print('DISTR in predict: ' + str(np.shape(np.array(DISTR))))
+        #print('X in _predict_probabilities: ' + str(np.shape(X)))
+        #print('DISTR in _predict_probabilities: ' + str(np.shape(np.array(DISTR))))
         #return np.array(DISTR).sum(axis=0)
         return DISTR.sum(axis=0)
 
@@ -174,15 +179,15 @@ class Frequencies:
         return 1 - st.chi2.cdf(c_dist_x, len(C))
 
 
-    def transform_data(self, path):
+    def _transform_data_over_grid(self, path):
         gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
         X = tr.create_X(gridded, self.structure)
         return X, target
 
 
     def rmse(self, path, plot_it=False):
-        X, target = self.transform_data(path)
-        y = self.predict(X)
+        X, target = self._transform_data_over_grid(path)
+        y = self._predict_probabilities(X)
         print(np.sum(y))
         print(np.sum(target))
         if plot_it:
@@ -197,8 +202,8 @@ class Frequencies:
 
 
     def poisson(self, path):
-        X, K = self.transform_data(path)
-        Lambda = self.predict(X)
+        X, K = self._transform_data_over_grid(path)
+        Lambda = self._predict_probabilities(X)
         #probs = st.poisson.cdf(K, Lambda)
         probs = st.poisson.cdf(K, Lambda)
         probs[(probs>0.94) & (K==0)] = 0.5
