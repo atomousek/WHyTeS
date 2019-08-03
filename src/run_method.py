@@ -11,10 +11,11 @@ import numpy as np
 
 # load and train the predictor
 #freqs = frequencies.Frequencies(train_path='../data/trenovaci_dva_tydny.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
-freqs = frequencies.Frequencies(train_path='../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0]))
+freqs = frequencies.Frequencies(train_path='../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt', edges_of_cell=np.array([3600.0, 0.1, 0.1]))
 #freqs = freqs.fit('../data/two_weeks_days_nights_weekends_with_angles_plus_reversed.txt')
 
 
+print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/data_for_visualization/two_weeks_days_nights_weekends_only_ones.txt')))
 #print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/trenovaci_dva_tydny.txt')))
 #print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testovaci_dva_dny.txt')))
 
@@ -31,7 +32,6 @@ print('manually calculated RMSE: ' + str(np.sqrt(np.mean((prediction - target) *
 # or calculate RMSE of prediction of values directly
 print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/testovaci_dva_dny.txt')))
 
-"""
 # and now, something copletely defferent
 #probs = freqs.poisson('../data/testovaci_dva_dny.txt')
 probs = freqs.poisson('../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt')
@@ -41,3 +41,4 @@ print("poisson prosel!")
 print("pocet malych outlieru: " + str(len(probs[probs<0.05])))
 print("pocet velkych outlieru: " + str(len(probs[probs>0.95])))
 print("pocet vsech hodnot: " + str(len(probs)))
+"""
