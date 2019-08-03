@@ -6,6 +6,7 @@ import full_grid as fg
 #import transformation_with_dirs as tr
 #import grid_with_directions as grid
 import integration
+import multiprocessing as mp
 
 
 import matplotlib.pyplot as plt
@@ -16,7 +17,19 @@ import pandas as pd
 import scipy.misc as sm
 
 from time import clock
-import chi_sqr_gsl
+#import chi_sqr_gsl
+
+import copy_reg
+import types
+import multiprocessing
+
+
+def _pickle_method(m):
+    if m.im_self is None:
+        return getattr, (m.im_class, m.im_func.func_name)
+    else:
+        return getattr, (m.im_self, m.im_func.func_name)
+
 
 
 class Frequencies:
@@ -145,6 +158,11 @@ class Frequencies:
         F = np.array(F)
         return F  #, heights
 
+
+    def _distrubition(self, idx, X):
+        return self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
+
+
     def _predict_probabilities(self, X):
         """
         there are two problems of thos function:
@@ -154,10 +172,21 @@ class Frequencies:
             b) input of only "raw" vectors (there should be projection of X into hypertime)
         """
         #DISTR = []
-        DISTR = np.empty((self.clusters, X.shape[0]))
-        for idx in xrange(self.clusters):
+        #DISTR = np.empty((self.clusters, X.shape[0]))
+        copy_reg.pickle(types.MethodType, _pickle_method)
+        pool = mp.Pool(mp.cpu_count())
+
+        results = [pool.apply_async(self._distrubition, (i, X)) for i in xrange(self.clusters)]
+
+        pool.close()
+        pool.join()
+
+        DISTR = [r.get() for r in results]
+        DISTR = np.array(DISTR)
+
+        #for idx in xrange(self.clusters):
             #DISTR.append(self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
-            DISTR[idx] = self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
+            #DISTR[idx] = self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
         #return np.array(DISTR).max(axis=0)
         #print('X in _predict_probabilities: ' + str(np.shape(X)))
         #print('DISTR in _predict_probabilities: ' + str(np.shape(np.array(DISTR))))
