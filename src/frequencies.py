@@ -154,10 +154,11 @@ class Frequencies:
         https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
         """
         X_C = X - C
-        c_dist_x = []
-        for x_c in X_C:
-            c_dist_x.append(np.dot(np.dot(x_c.T, PREC), x_c))
-        c_dist_x = np.array(c_dist_x)
+        c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
+        #c_dist_x = []
+        #for x_c in X_C:
+        #    c_dist_x.append(np.dot(np.dot(x_c.T, PREC), x_c))
+        #c_dist_x = np.array(c_dist_x)
         return 1 - st.chi2.cdf(c_dist_x, len(C))
 
 
