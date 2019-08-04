@@ -226,7 +226,15 @@ class Frequencies:
         dim = np.shape(X)[1]
         PI2 = np.pi*2
 
-        y = prediction_over_grid.predict(self.edges_of_cell, no_bins, starting_points, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)
+        copy_reg.pickle(types.MethodType, _pickle_method)
+        pool = mp.Pool(1)
+
+        results = [pool.apply_async(prediction_over_grid.predict, (self.edges_of_cell, no_bins, starting_points, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)) for i in xrange(1)]
+
+        pool.close()
+        pool.join()
+
+        y = [r.get() for r in results]
         #np.savetxt('y.txt', y)
         return y
 

@@ -35,7 +35,7 @@ cdef inline long expansion(const double [:] edges, const long [:] no_bins, const
                 bin_centre[base_dim + 2*id_n_p - 1] = cos(time*PI2/periodicities[id_n_p]) 
                 bin_centre[base_dim + 2*id_n_p] = sin(time*PI2/periodicities[id_n_p]) 
             prob = 0.0
-            for c in prange(no_clusters, nogil=True):
+            for c in xrange(no_clusters):
                 for i in xrange(degrees):
                     bin_minus_C[i] = bin_centre[i] - C[c,i]
                 distance = 0.0
