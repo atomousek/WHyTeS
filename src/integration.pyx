@@ -16,7 +16,7 @@ cdef inline double expansion(const double [:] edges, const long [:] no_bins, con
     cdef long j
     cdef double tmp
     cdef double distance
-    cdef double degrees
+    cdef long degrees
     cdef double time
     cdef long id_n_p
     cdef double prob
@@ -31,16 +31,16 @@ cdef inline double expansion(const double [:] edges, const long [:] no_bins, con
             for id_n_p in xrange(no_periods):
                 bin_centre[base_dim + 2*id_n_p - 1] = cos(time*PI2/periodicities[id_n_p]) 
                 bin_centre[base_dim + 2*id_n_p] = sin(time*PI2/periodicities[id_n_p]) 
-            for i in xrange(<long>degrees):
+            for i in xrange(degrees):
                 bin_minus_C[i] = bin_centre[i] - C[i]
             distance = 0.0
-            for j in xrange(<long>degrees):
+            for j in xrange(degrees):
                 tmp = 0.0
-                for i in xrange(<long>degrees):
+                for i in xrange(degrees):
                     tmp += PREC[i,j] * bin_minus_C[i]
                 tmp *= bin_minus_C[j]
                 distance += tmp
-            prob = gsl_cdf_chisq_Q(distance, degrees)
+            prob = gsl_cdf_chisq_Q(distance, <double>degrees)
             sum_of_probs += prob
     return sum_of_probs
              
