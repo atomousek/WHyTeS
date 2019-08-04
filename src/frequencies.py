@@ -3,6 +3,7 @@ import transformation as tr
 import grid
 import full_grid as fg
 import integration
+import prediction_over_grid
 import multiprocessing as mp
 
 
@@ -89,8 +90,9 @@ class Frequencies:
         return np.linalg.inv(COV)
 
 
-    def _get_density_test(self,C, U, P, edges, no_bins, starting_points, periodicities, dim, PI2):
-        weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C, P, PI2)
+    def _get_density_test(self,C, U, PREC, edges, no_bins, starting_points, periodicities, dim, PI2):
+        weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C, PREC, PI2)
+        # this should be part of integration
         if weights_sum == 0:
             density = 0
         else:
@@ -180,7 +182,9 @@ class Frequencies:
     def rmse(self, path, plot_it=False):
         X, target = self.transform_data_over_grid(path)
         start = clock()
-        y = self.predict_probabilities(X)
+        #y = self.predict_probabilities(X)
+        #np.savetxt('y_orig.txt', y)
+        y = self.predict_probabilities_test(path)
         finish = clock()
         print('rmse: ' + str(finish-start))
         print(np.sum(y))
@@ -210,5 +214,20 @@ class Frequencies:
         np.savetxt('../data/outliers.txt', out)
         return probs
         
+
+
+    def predict_probabilities_test(self, path):
+        # params
+        X = np.loadtxt(path)[:, :-1]
+        bins_and_ranges = fg.get_bins_and_ranges(X, self.edges_of_cell)
+        no_bins = np.array(bins_and_ranges[0])
+        starting_points = np.array(bins_and_ranges[1])[:,0] + (self.edges_of_cell * 0.5)
+        periodicities = np.array(self.structure[2])
+        dim = np.shape(X)[1]
+        PI2 = np.pi*2
+
+        y = prediction_over_grid.predict(self.edges_of_cell, no_bins, starting_points, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)
+        #np.savetxt('y.txt', y)
+        return y
 
 
