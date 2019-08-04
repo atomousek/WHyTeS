@@ -45,7 +45,7 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     cell_time = edges_of_cell[0]
 
     for i in range(len(outliers[:, 0]), 0, -1):
-        print i
+        #print i
         if outliers[i-1, 3] == 0:
             outliers = np.delete(outliers, i-1, 0)
         elif outliers[i-1, 3] == 2.0 or outliers[i-1, 3] == -1.0:
@@ -69,7 +69,7 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     number_of_frames = len(times)
 
     name = '../results/%sx%sx%s.avi' % (str(int(edges_of_cell[0])), str(edges_of_cell[1]), str(edges_of_cell[2]))
-    print name
+    #print name
     fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
     out = cv2.VideoWriter(name, fourcc, fps, (width, height))
 
@@ -79,7 +79,7 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     outlier_frame = empty_frame.copy()
 
     for i in xrange(number_of_frames):
-        print 'Video progress:  ' + str(i) + ' / ' + str(number_of_frames)
+        #print 'Video progress:  ' + str(i) + ' / ' + str(number_of_frames)
         if times[i] >= last_outlier + cell_time:
 
             if last_time < last_outlier + cell_time:
@@ -147,5 +147,5 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
 path_data = '../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt'
 path_outliers = '../results/outliers.txt'
 
-edges_of_cell=np.array([3600.0, 1.0, 1.0])
+edges_of_cell=np.array([600.0, 0.5, 0.5])
 print make_video(path_data, path_outliers, edges_of_cell=edges_of_cell)
