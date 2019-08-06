@@ -4,7 +4,6 @@ cimport cython
 from cython_gsl cimport *
 from libc.math cimport sin
 from libc.math cimport cos
-from cython.parallel import prange
 
 
 @cython.boundscheck(False)

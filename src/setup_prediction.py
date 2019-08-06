@@ -17,8 +17,7 @@ setup(
                                 libraries=cython_gsl.get_libraries(),
                                 library_dirs=[cython_gsl.get_library_dir()],
                                 include_dirs=[cython_gsl.get_cython_include_dir()],
-                                extra_compile_args=['-fopenmp'],
-                                extra_link_args=['-fopenmp'])
+                                extra_compile_args=['-march=native'])
                             ],
                                 annotate=True
                             )

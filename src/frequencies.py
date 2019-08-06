@@ -4,6 +4,9 @@ import grid
 import full_grid as fg
 import integration
 import prediction_over_grid
+import target_over_grid
+import generate_full_grid
+
 import multiprocessing as mp
 
 
@@ -11,7 +14,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as st
 import numpy as np
 
-from time import clock
+from time import clock, time
 
 import copy_reg
 import types
@@ -45,16 +48,19 @@ class Frequencies:
 
     def _create_model(self, path):
         C, U, PREC = self._get_params(path)
-        start = clock()
+        start = time()
         F = self._calibration_test(path, C, U, PREC)
-        finish = clock()
-        print(finish - start)
+        finish = time()
+        print('time for calibration: ' + str(finish - start))
         return C, F, PREC
 
 
     def _get_params(self, path):
         X = tr.create_X(self._get_data(path), self.structure)
+        start = time()
         clf = GaussianMixture(n_components=self.clusters, max_iter=500).fit(X)
+        finish = time()
+        print('time for clustering: ' + str(finish-start))
         labels = clf.predict(X)
         PREC = self._recalculate_precisions(X, labels)
         U = np.sum(clf.predict_proba(X), axis=0)
@@ -124,6 +130,7 @@ class Frequencies:
         dim = np.shape(X)[1]
         PI2 = np.pi*2
 
+        start = time()
         copy_reg.pickle(types.MethodType, _pickle_method)
         pool = mp.Pool(min(self.clusters, mp.cpu_count()))
 
@@ -134,6 +141,16 @@ class Frequencies:
 
         F = [r.get() for r in results]
         F = np.array(F)
+        finish = time()
+        print('integration using multi-cores: ' + str(finish-start))
+
+        #start = time()
+        #F = []
+        #for i in xrange(self.clusters):
+        #    F.append(self._get_density_test(C[i], U[i], PREC[i], edges, no_bins, starting_points, periodicities, dim, PI2))
+        #F = np.array(F)
+        #finish = time()
+        #print('integration using for loop: ' + str(finish-start))
 
         return F
 
@@ -180,13 +197,10 @@ class Frequencies:
 
 
     def rmse(self, path, plot_it=False):
-        X, target = self.transform_data_over_grid(path)
-        start = clock()
-        #y = self.predict_probabilities(X)
-        #np.savetxt('y_orig.txt', y)
-        y = self.predict_probabilities_test(path)
-        finish = clock()
-        print('rmse: ' + str(finish-start))
+        start = time()
+        y, target = self.predict_probabilities_test(path)
+        finish = time()
+        print('time for predidiction and reality(K and Lambda): ' + str(finish-start))
         print(np.sum(y))
         print(np.sum(target))
         if plot_it:
@@ -211,31 +225,60 @@ class Frequencies:
         labels[probs<0.05] = -1
         labels[probs>0.95] = 1
         out = np.c_[gridded, labels]
-        np.savetxt('../data/outliers.txt', out)
+        np.savetxt('../results/outliers.txt', out)
         return probs
         
 
 
     def predict_probabilities_test(self, path):
         # params
-        X = np.loadtxt(path)[:, :-1]
-        bins_and_ranges = fg.get_bins_and_ranges(X, self.edges_of_cell)
+        dataset = np.loadtxt(path)
+        bins_and_ranges = fg.get_bins_and_ranges(dataset[:, :-1], self.edges_of_cell)
         no_bins = np.array(bins_and_ranges[0])
-        starting_points = np.array(bins_and_ranges[1])[:,0] + (self.edges_of_cell * 0.5)
+        starting_points = np.array(bins_and_ranges[1])[:,0]
+        starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
         periodicities = np.array(self.structure[2])
-        dim = np.shape(X)[1]
+        dim = np.shape(dataset)[1] - 1
         PI2 = np.pi*2
 
-        copy_reg.pickle(types.MethodType, _pickle_method)
+        #copy_reg.pickle(types.MethodType, _pickle_method)
+
+        #pool = mp.Pool(1)
+        #results_y = [pool.apply_async(prediction_over_grid.predict, (self.edges_of_cell, no_bins, starting_points_plus, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)) for i in xrange(1)]
+        #results_target = [pool.apply_async(target_over_grid.target, (dataset, self.edges_of_cell, no_bins, starting_points)) for i in xrange(1)]
+        #pool.close()
+        #pool.join()
+
+        #y = [r.get() for r in results_y][0]
+        #target = [r.get() for r in results_target][0]
+
+        y = prediction_over_grid.predict(self.edges_of_cell, no_bins, starting_points_plus, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)
+
+        target = target_over_grid.target(dataset, self.edges_of_cell, no_bins, starting_points)
+
+        """
+        starting_points = np.array(bins_and_ranges[1])[:,0]
         pool = mp.Pool(1)
-
-        results = [pool.apply_async(prediction_over_grid.predict, (self.edges_of_cell, no_bins, starting_points, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)) for i in xrange(1)]
-
+        results = [pool.apply_async(target_over_grid.target, (dataset, self.edges_of_cell, no_bins, starting_points)) for i in xrange(1)]
         pool.close()
         pool.join()
 
-        y = [r.get() for r in results]
-        #np.savetxt('y.txt', y)
-        return y
+        target = [r.get() for r in results][0]
+        """
+        return y, target
 
 
+    def get_full_grid(self, path, save=True):
+        # params
+        dataset = np.loadtxt(path)
+        bins_and_ranges = fg.get_bins_and_ranges(dataset[:, :-1], self.edges_of_cell)
+        no_bins = np.array(bins_and_ranges[0])
+        starting_points = np.array(bins_and_ranges[1])[:,0]
+        starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
+        dim = np.shape(dataset)[1] - 1
+        grid = generate_full_grid.predict(self.edges_of_cell, no_bins, starting_points_plus, dim)
+        if save:
+            np.savetxt('../results/full_grid.txt', grid)
+            return None
+        else:
+            return grid
