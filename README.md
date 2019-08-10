@@ -1,9 +1,13 @@
-# Poisson distribution based outlier detection using WHyTe
+# clone branch to separate directory
+
+git clone -b 2019_ecmr --single-branch https://github.com/atomousek/WHyTeS
+
+# Pedestrian flows modelling using WHyTe and testing using Breadth first search
 
 In progress. Not functional.
 
-This repo contains datasets and experiments related to the MESAS 2019.
-The readme will be extended based on the MESAS reviews.
+This repo contains datasets and experiments related to the RAL (icra2020).
+The readme will be extended based on the RAL reviews.
 
 
 **software used during developement:**
@@ -32,5 +36,5 @@ if you want to run with different cell size please change the following variable
 text files with measurements in rows and variables in columns ordered in this way:
 
 timestamp,
-spatial variables.
+spatial variables. (not finished)
 
