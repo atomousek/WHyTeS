@@ -14,6 +14,5 @@ def get_periodicities(path, number_of_periods=5, max_periods=60*60*24*7):
 
     periods = []
     for line in output.splitlines():
-        periods.append(line)
-
+        periods.append(float(line))
     return periods
