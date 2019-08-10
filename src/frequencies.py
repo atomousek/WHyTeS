@@ -1,6 +1,6 @@
 from sklearn.mixture import GaussianMixture
 import transformation as tr
-import grid
+#import grid
 import full_grid as fg
 import integration
 import prediction_over_grid

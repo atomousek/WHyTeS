@@ -3,7 +3,7 @@ from distutils.core import setup
 from Cython.Distutils import build_ext
 from distutils.extension import Extension
 from Cython.Build import cythonize
-#python setup.py build_ext -i
+#python setup_grid.py build_ext -i
 
 setup(
     name="cython grid",

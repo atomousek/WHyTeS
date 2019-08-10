@@ -4,7 +4,7 @@ from Cython.Distutils import build_ext
 from distutils.extension import Extension
 import cython_gsl
 from Cython.Build import cythonize
-#python setup.py build_ext -i
+#python setup_target.py build_ext -i
 
 setup(
     name="cython target",
