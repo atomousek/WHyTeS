@@ -1,6 +1,6 @@
 # clone branch to separate directory
 
-git clone -b 2019_ecmr --single-branch https://github.com/atomousek/WHyTeS
+git clone -b 2020_icra_RAL --single-branch https://github.com/atomousek/WHyTeS
 
 # Pedestrian flows modelling using WHyTe and testing using Breadth first search
 
