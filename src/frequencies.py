@@ -1,5 +1,6 @@
 from sklearn.mixture import GaussianMixture
-import transformation as tr
+#import transformation as tr
+import transformation_with_dirs as tr
 #import grid
 import full_grid as fg
 import integration
@@ -38,7 +39,7 @@ class Frequencies:
 
     def __init__(self, clusters=3,
                  edges_of_cell = np.array([1200.0, 0.5, 0.5]),
-                 structure=[2, [1.0, 1.0], [86400.0, 604800.0]],
+                 structure=[2, [86400.0, 604800.0], False],
                  train_path = '../data/two_weeks_days_nights_weekends.txt'):
         self.clusters = clusters
         self.edges_of_cell = edges_of_cell
@@ -56,7 +57,7 @@ class Frequencies:
 
 
     def _get_params(self, path):
-        X = tr.create_X(self._get_data(path), self.structure)
+        X = _create_X(self._get_data(path), self.structure)
         start = time()
         clf = GaussianMixture(n_components=self.clusters, max_iter=500).fit(X)
         finish = time()
@@ -126,7 +127,7 @@ class Frequencies:
         no_bins = np.array(bins_and_ranges[0])
         starting_points = np.array(bins_and_ranges[1])[:,0] + (self.edges_of_cell * 0.5)
         edges = self.edges_of_cell
-        periodicities = np.array(self.structure[2])
+        periodicities = np.array(self.structure[1])
         dim = np.shape(X)[1]
         PI2 = np.pi*2
 
@@ -192,7 +193,7 @@ class Frequencies:
 
     def transform_data_over_grid(self, path):
         gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
-        X = tr.create_X(gridded, self.structure)
+        X = _create_X(gridded, self.structure)
         return X, target
 
 
@@ -237,7 +238,7 @@ class Frequencies:
         no_bins = np.array(bins_and_ranges[0])
         starting_points = np.array(bins_and_ranges[1])[:,0]
         starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
-        periodicities = np.array(self.structure[2])
+        periodicities = np.array(self.structure[1])
         dim = np.shape(dataset)[1] - 1
         PI2 = np.pi*2
 
@@ -282,3 +283,30 @@ class Frequencies:
             return None
         else:
             return grid
+
+
+
+    def _create_X(self, data):
+        """
+        objective:
+            return data of one class projected into the warped hypertime space
+        input: 
+            data numpy array nxd*, matrix of measures IRL, where d* is number of measured variables
+                                   the first column need to be timestamp
+                                   last two columns can be phi and v, the angle and speed of human
+        output: 
+            X numpy array nxd, data projected into the warped hypertime space
+        """
+        dim = self.structure[0]
+        wavelengths = self.structure[1]
+        X = np.empty((len(data), dim + (len(wavelengths) * 2) + self.structure[2]*2))
+        X[:, : dim] = data[:, 1: dim + 1]
+        for Lambda in wavelengths:
+            X[:, dim: dim + 2] = np.c_[np.cos(data[:, 0] * 2 * np.pi / Lambda),
+                                       np.sin(data[:, 0] * 2 * np.pi / Lambda)]
+            dim = dim + 2
+
+        if self.structure[2]:
+            X[:, dim: dim + 2] = np.c_[data[:, -1] * np.cos(data[:, -2]),
+                                       data[:, -1] * np.sin(data[:, -2])]
+        return X
