@@ -40,7 +40,7 @@ import numpy as np
 from collections import defaultdict
 
 
-def chosen_period(T, S, W, weights):
+def chosen_period(T, S, W, weights=1.0, return_all=False):
     """
     input: T numpy array Nx1, time positions of measured values
            time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
@@ -67,11 +67,11 @@ def chosen_period(T, S, W, weights):
     """
     # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
     G = complex_numbers_batch(T, S, W, weights)
-    P = max_influence(W, G)
+    P = max_influence(W, G, return_all)
     # power spectral density ???
-    sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
+    #sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
     #sum_of_amplitudes = np.sum(np.absolute(G))
-    return P, sum_of_amplitudes
+    return P#, sum_of_amplitudes
 
 
 def complex_numbers_batch(T, S, W, weights):
@@ -111,6 +111,10 @@ def max_influence(W, G, return_all=False):
     objective: to find length of the most influential periodicity in default
                units and return changed list of frequencies
     """
+    if return_all:
+        idxs = np.argsort(np.absolute(G))
+        return W[idxs]
+    else:
         #maximum_position = np.argmax(np.absolute(G[1:])) + 1
         maximum_position = np.argmax(np.absolute(G))
         influential_frequency = W[maximum_position]

@@ -38,8 +38,8 @@ class Frequencies:
 
 
     def __init__(self, clusters=3,
-                 edges_of_cell = np.array([1200.0, 0.5, 0.5]),
-                 structure=[2, [86400.0, 604800.0], False],
+                 edges_of_cell = np.array([1200.0, 0.5, 0.5, np.pi/4.0, 0.5]),
+                 structure=[2, [86400.0, 604800.0], True],
                  train_path = '../data/two_weeks_days_nights_weekends.txt'):
         self.clusters = clusters
         self.edges_of_cell = edges_of_cell
@@ -57,7 +57,7 @@ class Frequencies:
 
 
     def _get_params(self, path):
-        X = _create_X(self._get_data(path), self.structure)
+        X = self._create_X(self._get_data(path))
         start = time()
         clf = GaussianMixture(n_components=self.clusters, max_iter=500).fit(X)
         finish = time()
@@ -193,7 +193,7 @@ class Frequencies:
 
     def transform_data_over_grid(self, path):
         gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
-        X = _create_X(gridded, self.structure)
+        X = self._create_X(gridded)
         return X, target
 
 
