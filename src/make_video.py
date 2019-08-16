@@ -69,7 +69,6 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     number_of_frames = len(times)
 
     name = '../results/%sx%sx%s.avi' % (str(int(edges_of_cell[0])), str(edges_of_cell[1]), str(edges_of_cell[2]))
-    #print name
     fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
     out = cv2.VideoWriter(name, fourcc, fps, (width, height))
 
@@ -79,43 +78,35 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     outlier_frame = empty_frame.copy()
 
     for i in xrange(number_of_frames):
-        #print 'Video progress:  ' + str(i) + ' / ' + str(number_of_frames)
-        if times[i] >= last_outlier + cell_time:
-
-            if last_time < last_outlier + cell_time:
-                while last_time < last_outlier + cell_time:
-                    temp = outlier_frame.copy()
-                    last_time += 0.5
-                    cv2.putText(temp, str(last_time), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), lineType=cv2.LINE_4)
-                    cv2.putText(temp, datetime.utcfromtimestamp(last_time).strftime('Day:%d, Time:%H:%M:%S'),
-                                (9 * size_factor, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.06 * size_factor, (0, 0, 255),
-                                lineType=cv2.LINE_4)
-                    counter += 1
-                    out.write(temp)
-
-            # print "FLUSH!"
-            frame = empty_frame.copy()
-            outlier_frame = empty_frame.copy()
-        else:
-            # print "keep going.."
-            frame = outlier_frame.copy()
-
+        # if times[i] >= last_outlier + cell_time:
+        #
+        #     if last_time < last_outlier + cell_time:
+        #         while last_time < last_outlier + cell_time:
+        #             temp = outlier_frame.copy()
+        #             last_time += 0.5
+        #             cv2.putText(temp, str(last_time), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), lineType=cv2.LINE_4)
+        #             cv2.putText(temp, datetime.utcfromtimestamp(last_time).strftime('Day:%d, Time:%H:%M:%S'),
+        #                         (9 * size_factor, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.06 * size_factor, (0, 0, 255),
+        #                         lineType=cv2.LINE_4)
+        #             counter += 1
+        #             out.write(temp)
+        #
+        #     # print "FLUSH!"
+        #     frame = empty_frame.copy()
+        #     outlier_frame = empty_frame.copy()
+        # else:
+        #     # print "keep going.."
+        #     frame = outlier_frame.copy()
+        frame = empty_frame.copy()
         name = str(times[i])
         while k < len(concatenated[:, 0]) and times[i] == concatenated[k, 0]:
 
-            # drawing detected outliers
+            # labeling the robot
             if concatenated[k, 3] == 2.0:
                 cv2.circle(outlier_frame, (int(concatenated[k, 1] + abs(x_min)) * size_factor,
                                            height - int(concatenated[k, 2] + abs(y_min)) * size_factor), int(0.7 * edges_of_cell[2] *size_factor),
                            (250, 250, 0), int(0.1 * size_factor))
                 last_outlier = concatenated[k, 0]
-
-            if concatenated[k, 3] == -1.0:
-                cv2.circle(outlier_frame, (int(concatenated[k, 1] + abs(x_min)) * size_factor,
-                                           height - int(concatenated[k, 2] + abs(y_min)) * size_factor), int(0.7 * edges_of_cell[2] * size_factor),
-                           (250, 0, 250), int(0.1 * size_factor))
-                last_outlier = concatenated[k, 0]
-
 
             # labeling the occurrences
             if concatenated[k, 3] == 1:
@@ -123,12 +114,6 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
                 cv2.circle(frame, (int(concatenated[k, 1] + abs(x_min))*size_factor,
                                    height - int(concatenated[k, 2] + abs(y_min))*size_factor),
                            int(0.2*size_factor), (255, 0, 0), int(0.1*size_factor))
-
-                # Labeling THE known outliers
-                # I think, this should be done only once and needs to be added into the data as a new column
-                if (abs(concatenated[k, 1] - 19.3) < 0.2 and abs(concatenated[k, 2] + 2.3) < 0.2) or (abs(concatenated[k, 1] - 1.31) < 0.1 and abs(concatenated[k, 2] - 5.63) < 0.1):
-                    cv2.circle(frame, (int(concatenated[k, 1] + abs(x_min)) * size_factor,
-                                       height - int(concatenated[k, 2] + abs(y_min)) * size_factor), int(0.2 * size_factor), (0, 0, 255), int(0.1 * size_factor))
 
             k += 1
         cv2.putText(frame, name, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), lineType=cv2.LINE_4)
@@ -145,7 +130,7 @@ def make_video (path_data, path_outliers, edges_of_cell=np.array([3600.0, 1.0, 1
     return counter
 
 path_data = '../data/data_for_visualization/wednesday_thursday_days_nights_only_ones.txt'
-path_outliers = '../results/outliers.txt'
+path_trajectory = '../results/trajectory.txt'
 
 edges_of_cell=np.array([600.0, 0.5, 0.5])
-print make_video(path_data, path_outliers, edges_of_cell=edges_of_cell)
+print make_video(path_data, path_trajectory, edges_of_cell=edges_of_cell)
