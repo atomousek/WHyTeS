@@ -1,6 +1,6 @@
 from sklearn.mixture import GaussianMixture
 #import transformation as tr
-import transformation_with_dirs as tr
+#import transformation_with_dirs as tr
 #import grid
 import full_grid as fg
 import integration
