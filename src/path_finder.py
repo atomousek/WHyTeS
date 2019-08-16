@@ -272,8 +272,9 @@ if __name__ == "__main__":
 
     edges_of_cell = np.array([3600., 1., 1.])
     path_finder = PathFinder('../results/outliers.txt', edges_of_cell)
-
     path_finder.creat_graph()
+    #walls = np.loadtxt('../data/walls.txt')
+    #path_finder.remove_walls(walls)
     print path_finder.find_shortest_path((0, 0), (15, 13))
     path_finder.extract_path()
     p = np.loadtxt('../results/path.txt')
