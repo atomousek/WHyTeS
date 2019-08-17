@@ -22,15 +22,15 @@ import types
 import multiprocessing
 
 
-def _pickle_method(m):
-    '''
-    copied from https://github.com/stratospark/food-101-keras/issues/10
-    '''
-
-    if m.im_self is None:
-        return getattr, (m.im_class, m.im_func.func_name)
-    else:
-        return getattr, (m.im_self, m.im_func.func_name)
+#def _pickle_method(m):
+#    '''
+#    copied from https://github.com/stratospark/food-101-keras/issues/10
+#    '''
+#
+#    if m.im_self is None:
+#        return getattr, (m.im_class, m.im_func.func_name)
+#    else:
+#        return getattr, (m.im_self, m.im_func.func_name)
 
 
 
@@ -71,6 +71,7 @@ class Frequencies:
 
     def _get_data(self, path):
         """
+        do we need that?
         """
         dataset = np.loadtxt(path)
         training_data = dataset[dataset[:, -1] > 0, 0: -1]
@@ -97,24 +98,24 @@ class Frequencies:
         return np.linalg.inv(COV)
 
 
-    def _get_density_test(self,C, U, PREC, edges, no_bins, starting_points, periodicities, dim, PI2):
-        weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C, PREC, PI2)
-        # this should be part of integration
-        if weights_sum == 0:
-            density = 0
-        else:
-            density = U / weights_sum
-        #with np.errstate(divide='raise'):
-        #    try:
-        #        density = U / weights_sum
-        #    except FloatingPointError:
-        #        print('vahy se souctem 0 nebo nevim')
-        #        print('sum of weights')
-        #        print weights_sum
-        #        print('sum of U')
-        #        print(U)
-        #        density = 0
-        return density
+    #def _get_density_test(self,C, U, PREC, edges, no_bins, starting_points, periodicities, dim, PI2):
+    #    weights_sum = integration.expand(edges, no_bins, starting_points, periodicities, dim, C, PREC, PI2)
+    #    # this should be part of integration
+    #    if weights_sum == 0:
+    #        density = 0
+    #    else:
+    #        density = U / weights_sum
+    #    #with np.errstate(divide='raise'):
+    #    #    try:
+    #    #        density = U / weights_sum
+    #    #    except FloatingPointError:
+    #    #        print('vahy se souctem 0 nebo nevim')
+    #    #        print('sum of weights')
+    #    #        print weights_sum
+    #    #        print('sum of U')
+    #    #        print(U)
+    #    #        density = 0
+    #    return density
 
 
     def _calibration_test(self, path, C, U, PREC):
@@ -125,6 +126,7 @@ class Frequencies:
         X = np.loadtxt(path)[:, :-1]
         bins_and_ranges = fg.get_bins_and_ranges(X, self.edges_of_cell)
         no_bins = np.array(bins_and_ranges[0])
+        print('no_bins: ' + str(no_bins))
         starting_points = np.array(bins_and_ranges[1])[:,0] + (self.edges_of_cell * 0.5)
         edges = self.edges_of_cell
         periodicities = np.array(self.structure[1])
@@ -132,10 +134,11 @@ class Frequencies:
         PI2 = np.pi*2
 
         start = time()
-        copy_reg.pickle(types.MethodType, _pickle_method)
+        #copy_reg.pickle(types.MethodType, _pickle_method)
         pool = mp.Pool(min(self.clusters, mp.cpu_count()))
 
-        results = [pool.apply_async(self._get_density_test, (C[i], U[i], PREC[i], edges, no_bins, starting_points, periodicities, dim, PI2)) for i in xrange(self.clusters)]
+        #results = [pool.apply_async(self._get_density_test, (C[i], U[i], PREC[i], edges, no_bins, starting_points, periodicities, dim, PI2)) for i in xrange(self.clusters)]
+        results = [pool.apply_async(integration.expand, (edges, no_bins, starting_points, periodicities, dim, C[i], PREC[i], PI2, U[i])) for i in xrange(self.clusters)]
 
         pool.close()
         pool.join()
@@ -156,45 +159,45 @@ class Frequencies:
         return F
 
 
-    def _get_distrubition(self, idx, X):
-        return self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
+    #def _get_distrubition(self, idx, X):
+    #    return self.F[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx])
 
 
-    def predict_probabilities(self, X):
-        """
-        there are two problems of thos function:
-        1) this shoud be helper method
-        2) real _predict_probabilities accessible by user has to be prepared to:
-            a) input of 1 to n vectors
-            b) input of only "raw" vectors (there should be projection of X into hypertime)
-        """
-        copy_reg.pickle(types.MethodType, _pickle_method)
-        pool = mp.Pool(min(self.clusters, mp.cpu_count()))
+    #def predict_probabilities(self, X):
+    #    """
+    #    there are two problems of thos function:
+    #    1) this shoud be helper method
+    #    2) real _predict_probabilities accessible by user has to be prepared to:
+    #        a) input of 1 to n vectors
+    #        b) input of only "raw" vectors (there should be projection of X into hypertime)
+    #    """
+    #    copy_reg.pickle(types.MethodType, _pickle_method)
+    #    pool = mp.Pool(min(self.clusters, mp.cpu_count()))
 
-        results = [pool.apply_async(self._get_distrubition, (i, X)) for i in xrange(self.clusters)]
+    #    results = [pool.apply_async(self._get_distrubition, (i, X)) for i in xrange(self.clusters)]
 
-        pool.close()
-        pool.join()
+    #    pool.close()
+    #    pool.join()
 
-        DISTR = [r.get() for r in results]
-        DISTR = np.array(DISTR)
-        return DISTR.sum(axis=0)
-
-
-    def _prob_of_belong(self, X, C, PREC):
-        """
-        massively inspired by:
-        https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
-        """
-        X_C = X - C
-        c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
-        return 1 - st.chi2.cdf(c_dist_x, len(C))
+    #    DISTR = [r.get() for r in results]
+    #    DISTR = np.array(DISTR)
+    #    return DISTR.sum(axis=0)
 
 
-    def transform_data_over_grid(self, path):
-        gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
-        X = self._create_X(gridded)
-        return X, target
+    #def _prob_of_belong(self, X, C, PREC):
+    #    """
+    #    massively inspired by:
+    #    https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
+    #    """
+    #    X_C = X - C
+    #    c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
+    #    return 1 - st.chi2.cdf(c_dist_x, len(C))
+
+
+    #def transform_data_over_grid(self, path):
+    #    gridded, target = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)
+    #    X = self._create_X(gridded)
+    #    return X, target
 
 
     def rmse(self, path, plot_it=False):
@@ -215,19 +218,19 @@ class Frequencies:
         return np.sqrt(np.mean((y - target) ** 2.0))
 
 
-    def poisson(self, path):
-        X, K = self._transform_data_over_grid(path)
-        Lambda = self._predict_probabilities(X)
-        probs = st.poisson.cdf(K, Lambda)
-        probs[(probs>0.94) & (K==0)] = 0.5
-        ################## only for one-time visualisation #########
-        gridded = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0]
-        labels = np.zeros_like(probs)
-        labels[probs<0.05] = -1
-        labels[probs>0.95] = 1
-        out = np.c_[gridded, labels]
-        np.savetxt('../results/outliers.txt', out)
-        return probs
+    #def poisson(self, path):
+    #    X, K = self._transform_data_over_grid(path)
+    #    Lambda = self._predict_probabilities(X)
+    #    probs = st.poisson.cdf(K, Lambda)
+    #    probs[(probs>0.94) & (K==0)] = 0.5
+    #    ################## only for one-time visualisation #########
+    #    gridded = fg.get_full_grid(np.loadtxt(path), self.edges_of_cell)[0]
+    #    labels = np.zeros_like(probs)
+    #    labels[probs<0.05] = -1
+    #    labels[probs>0.95] = 1
+    #    out = np.c_[gridded, labels]
+    #    np.savetxt('../results/outliers.txt', out)
+    #    return probs
         
 
 

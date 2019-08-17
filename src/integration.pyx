@@ -48,10 +48,15 @@ cdef inline double expansion(const double [:] edges, const long [:] no_bins, con
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def expand(double [:] edges, long [:] no_bins, double [:] starting_points, double [:] periodicities, long dim, double [:] C, double [:,:] PREC, double PI2):
+def expand(double [:] edges, long [:] no_bins, double [:] starting_points, double [:] periodicities, long dim, double [:] C, double [:,:] PREC, double PI2, double U):
     cdef double sum_of_probs = 0.0
     cdef long no_periods = len(periodicities)
+    cdef double summed_weights
     cdef cnp.ndarray[cnp.float64_t, ndim=1] bin_centre = np.zeros(dim + 2*no_periods - 1, dtype=np.float64)
     cdef cnp.ndarray[cnp.float64_t, ndim=1] bin_minus_C = np.zeros(dim + 2*no_periods - 1, dtype=np.float64)
-    return expansion(edges, no_bins, starting_points, periodicities, no_periods, dim-1, bin_centre, dim, sum_of_probs, C, PREC, PI2, bin_minus_C)
+    summed_weights = expansion(edges, no_bins, starting_points, periodicities, no_periods, dim-1, bin_centre, dim, sum_of_probs, C, PREC, PI2, bin_minus_C)
+    if summed_weights > 0.0:
+        return U / summed_weights
+    else:
+        return 0.0
 
