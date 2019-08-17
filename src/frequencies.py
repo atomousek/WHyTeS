@@ -184,14 +184,14 @@ class Frequencies:
     #    return DISTR.sum(axis=0)
 
 
-    #def _prob_of_belong(self, X, C, PREC):
-    #    """
-    #    massively inspired by:
-    #    https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
-    #    """
-    #    X_C = X - C
-    #    c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
-    #    return 1 - st.chi2.cdf(c_dist_x, len(C))
+    def _prob_of_belong(self, X, C, PREC):
+        """
+        massively inspired by:
+        https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
+        """
+        X_C = X - C
+        c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
+        return 1 - st.chi2.cdf(c_dist_x, len(C))
 
 
     #def transform_data_over_grid(self, path):

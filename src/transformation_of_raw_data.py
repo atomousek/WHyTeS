@@ -32,12 +32,13 @@ v = np.sqrt(np.sum(vel_t ** 2, axis=1))
 #v2 = np.sqrt(np.sum(vel ** 2, axis=1))
 #print(v)
 #print(v2)
-phi = np.sign(vel_t[:,1])*np.arccos(vel_t[:,0]/v)
+my_signum = (vel_t[:,1]>0.0)*2.0 - 1.0
+phi = my_signum*np.arccos(vel_t[:,0]/v)
 
 
 
 data = np.c_[time, vec_t, phi, v, ones]
 
-filtered = data[(data[:,1]>-9.25) & (data[:,1]<3.0) & (data[:,2]>0.0) & (data[:,2]<16.0), :]
+filtered = data[(data[:,1]>-9.25) & (data[:,1]<3.0) & (data[:,2]>0.1) & (data[:,2]<16.0), :]
 
 np.savetxt('../data/training_03_04_rotated.txt', filtered)
