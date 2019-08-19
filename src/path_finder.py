@@ -1,4 +1,5 @@
 import networkx
+from networkx.exception import NetworkXError
 import numpy as np
 import math
 
@@ -17,7 +18,6 @@ class PathFinder:
         self.x_max = 3.0
         self.y_min = 0.0
         self.y_max = 16.0
-
         # self.x_max = np.max(data[:, 1])
         # self.x_min = np.min(data[:, 1])
         # self.y_max = np.max(data[:, 2])
@@ -38,7 +38,7 @@ class PathFinder:
         x_length = self.edges_of_cell[1]
         y_length = self.edges_of_cell[2]
 
-        return (self.x_min + x_length*column - x_length*0.5,  self.y_max - y_length*row + y_length*0.5)
+        return (self.x_min + x_length*column - x_length*0.5, self.y_max - y_length*row + y_length*0.5)
 
     def get_index(self, x, y):
         """
@@ -49,7 +49,7 @@ class PathFinder:
         x_length = self.edges_of_cell[1]
         y_length = self.edges_of_cell[2]
 
-        return  (int((self.y_max-y)/y_length+1),  int((x - self.x_min)/x_length+1))
+        return  (int((self.y_max-y)/y_length+1), int((x - self.x_min)/x_length+1))
 
     def get_weight(self, dst, angle):
         real_dst = self.get_real_coordinate(dst[0], dst[1])
@@ -219,12 +219,11 @@ class PathFinder:
 
     def remove_walls(self, walls):
 
-        for i in xrange(walls.shape[0]):
-            row, column = self.get_index(walls[i][0], walls[i][1])
+        for position in walls:
+            row, column = self.get_index(position[0], position[1])
             try:
                 self.graph.remove_node((row, column))
-
-            except:
+            except NetworkXError:
                 pass
         return
 
@@ -272,8 +271,8 @@ class PathFinder:
         return self.shortest_path
 
     def _round_time(self, data):
-        for i in xrange(len(data[:, 0])):
-            data[i, 0] = int(data[i, 0])
+        for line in data:
+            line[0] = int(line[0])
         return data
 
     def extract_intersections(self, path):
@@ -281,9 +280,9 @@ class PathFinder:
         data = data[data[:, 0].argsort()]
         data = self._round_time(data)
         k = 0
-        for i in xrange(len(self.trajectory[:, 0])):
-            row_robot, column_robot = self.get_index(self.trajectory[i, 1], self.trajectory[i, 2])
-            while int(data[k, 0]) ==  int(self.trajectory[i, 0]):
+        for position in self.trajectory:
+            row_robot, column_robot = self.get_index(position[1], position[2])
+            while int(data[k, 0]) == int(position[0]):
                 row_data, column_data = self.get_index(data[k, 1], data[k, 2])
                 if row_data == row_robot and column_data == column_robot:
                     self.intersections.append((data[k, 0], data[k, 1], data[k, 2], 0, 0, 3))
@@ -326,7 +325,7 @@ if __name__ == "__main__":
     p = np.loadtxt('../results/path.txt')
     testing_data_path = '../data/testing_data.txt'
     data = np.loadtxt(testing_data_path)
-    path_finder.extract_trajectory(p, np.min(data[:, 0]), speed = 0.5)
+    path_finder.extract_trajectory(p, np.min(data[:, 0]), speed = 1)
     # print path_finder.graph.nodes
 
     print path_finder.extract_intersections(testing_data_path)
