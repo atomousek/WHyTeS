@@ -282,7 +282,7 @@ class PathFinder:
         k = 0
         for position in self.trajectory:
             row_robot, column_robot = self.get_index(position[1], position[2])
-            while int(data[k, 0]) == int(position[0]):
+            while k < len(data[:, 0]) and int(data[k, 0]) == int(position[0]):
                 row_data, column_data = self.get_index(data[k, 1], data[k, 2])
                 if row_data == row_robot and column_data == column_robot:
                     self.intersections.append((data[k, 0], data[k, 1], data[k, 2], 0, 0, 3))
@@ -307,25 +307,27 @@ class PathFinder:
                         centers[k, 3] = speeds[s]
                         k+=1
 
-
         np.savetxt('../results/centers.txt', centers)
+
+
 if __name__ == "__main__":
 
     edges_of_cell = np.array([3600., 0.5, 0.5])
     path_finder = PathFinder('../data/model_of_8angles_0.5m.txt', edges_of_cell)
     path_finder.creat_graph()
-    # path_finder.extract_centers()
-
     walls = np.loadtxt('../data/artificial_boarders_of_space_in_UTBM.txt')
     path_finder.remove_walls(walls)
-    # route = [(-8.5, 15), (2, 15), (2, 3), (-8.5, 15), (-8.5, 3), (2, 15)]
-    route = [(-3.4, 13.2), (2, 15), (2, 3), (-8.5, 15), (-8.5, 3), (2, 15)]
+
+    # route = [(-3.4, 13.2), (2, 15), (2, 3), (-8.5, 15), (-8.5, 3), (2, 15)]
+    route = [(-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10)]
+
     path_finder.find_shortest_path(route)
     path_finder.extract_path()
-    p = np.loadtxt('../results/path.txt')
+
+    path = np.loadtxt('../results/path.txt')
     testing_data_path = '../data/testing_data.txt'
+
     data = np.loadtxt(testing_data_path)
-    path_finder.extract_trajectory(p, np.min(data[:, 0]), speed = 1)
-    # print path_finder.graph.nodes
+    path_finder.extract_trajectory(path, np.min(data[:, 0]), speed=1)
 
     print path_finder.extract_intersections(testing_data_path)

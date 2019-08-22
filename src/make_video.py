@@ -8,7 +8,10 @@ class VideoMaker:
     def __init__(self, path_data, path_trajectory, path_intersections, path_borders, edges_of_cell, size_factor):
         self.data = np.loadtxt(path_data)
         self.trajectory = np.loadtxt(path_trajectory)
-        self.intersections = np.loadtxt(path_intersections).reshape((1, self.data.shape[1]))
+        # self.intersections = np.loadtxt(path_intersections).reshape(1, self.data.shape[1])
+        self.intersections = np.loadtxt(path_intersections)
+        if self.trajectory.shape[1] == 1:
+            self.intersections = self.intersections.reshape(1, self.data.shape[1])
         self.edges_of_cell = edges_of_cell
         self.path_borders = path_borders
         # self.x_max = np.max(self.data[:, 1])
@@ -19,8 +22,10 @@ class VideoMaker:
         self.x_max = 3.0
         self.y_min = 0.0
         self.y_max = 16.0
-        self.time_min = int(np.min(self.data[:, 0]))
-        self.time_max = int(np.max(self.data[:, 0]))
+        self.time_max = int(max(np.max(self.data[:, 0]), np.max(self.trajectory[:, 0])))
+        self.time_min = int(min(np.min(self.data[:, 0]), np.min(self.trajectory[:, 0])))
+        # self.time_max = int(np.max(self.trajectory[:, 0]))
+        # self.time_min = int(np.min(self.trajectory[:, 0]))
         self.size_factor = size_factor
         self.shape = (int((self.y_max - self.y_min) * size_factor / edges_of_cell[2]),
                      int((self.x_max - self.x_min) * size_factor / edges_of_cell[1]))
@@ -59,7 +64,7 @@ class VideoMaker:
         concatenated = np.concatenate((self.data, self.trajectory, self.intersections), axis=0)
         concatenated = concatenated[concatenated[:, 0].argsort()]
 
-        times = np.arange(self.time_min, self.time_max, 1)
+        times = np.arange(self.time_min, self.time_max, 0.1)
         counter = 0
         k = 0
         number_of_frames = len(times)
@@ -72,11 +77,11 @@ class VideoMaker:
         empty_frame = self._create_empty_frame()
         last_pos_robot = (0, 0)
         for time in times:
-
             frame = empty_frame.copy()
             name = str(time)
             del pedestrians[:]
-            while k < len(concatenated[:, 0]) and time == int(concatenated[k, 0]):
+            # this is definitely bad way to round. I'll change it.
+            while k < len(concatenated[:, 0]) and int(time*10)/10.0 == int(concatenated[k, 0]*10)/10.0:
 
                 # labeling the robot
                 if int(concatenated[k, 5]) == 2:
@@ -85,17 +90,17 @@ class VideoMaker:
                 # labeling the pedestrians
                 if int(concatenated[k, 5]) == 1:
                     pos = self.get_frame_index(concatenated[k, 1], concatenated[k, 2])
-                    if len(pedestrians) == 0:
-                        pedestrians.append((pos, concatenated[k, 3]))
-                    for j in xrange(len(pedestrians)):
-                        if pedestrians[j][1] == concatenated[k, 3]:
-                            del pedestrians[j]
-                            pedestrians.append((pos, concatenated[k, 3]))
-                        elif j == len(pedestrians):
-                            pedestrians.append((pos, concatenated[k, 3]))
-                    # cv2.circle(frame, pos, int(0.5 * edges_of_cell[2] * self.size_factor),
-                    #            (250, 0, 0), int(0.2 * self.size_factor))
-                    # cv2.putText(frame, str(int(concatenated[k, 3]*100)), pos, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), lineType=cv2.LINE_4)
+                    # if len(pedestrians) == 0:
+                    #     pedestrians.append((pos, concatenated[k, 3]))
+                    # for j in xrange(len(pedestrians)):
+                    #     if pedestrians[j][1] == concatenated[k, 3]:
+                    #         del pedestrians[j]
+                    #         pedestrians.append((pos, concatenated[k, 3]))
+                    #     elif j == len(pedestrians):
+                    #         pedestrians.append((pos, concatenated[k, 3]))
+                    cv2.circle(frame, pos, int(0.5 * edges_of_cell[2] * self.size_factor),
+                               (250, 0, 0), int(0.2 * self.size_factor))
+                    cv2.putText(frame, str(int(concatenated[k, 3]*100)), pos, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), lineType=cv2.LINE_4)
 
                 # labeling the intersections
                 if int(concatenated[k, 5]) == 3:
@@ -127,6 +132,7 @@ class VideoMaker:
 if __name__ == "__main__":
 
     path_data = '../data/testing_data.txt'
+    # path_data = '../data/training_03_04_rotated.txt'
     path_trajectory = '../results/trajectory.txt'
     path_borders = '../data/artificial_boarders_of_space_in_UTBM.txt'
     path_intersections = '../results/intersections.txt'
