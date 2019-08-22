@@ -5,20 +5,36 @@ import frequencies
 import numpy as np
 from time import time
 #import fremen_wrapper as fremen
+"""
 import fremen
 
-periods = 2
+#periods = 2
 
 TS = np.loadtxt('../data/training_03_04_rotated.txt')[:, [0,-1]]
 
-#W = fremen.build_frequencies(60*60*24, 60*60)
+##W = fremen.build_frequencies(60*60*24, 60*60)
 P = fremen.chosen_period(T=TS[:,0], S=TS[:,1], W=fremen.build_frequencies(60*60*24, 60*60), weights=1.0, return_all=True)
 print(1/P)
-
+# 6646.15384615  6171.42857143  3756.52173913 10800.0
+"""
 start = time()
-freqs = frequencies.Frequencies(train_path='../data/training_03_04_rotated.txt', edges_of_cell=np.array([3600.0, 1.0, 1.0, np.pi/4.0, 1.0]), structure=[2, [], True], clusters=5)
+#freqs = frequencies.Frequencies(train_path='../data/training_03_04_rotated_speeds.txt', edges_of_cell=np.array([86400.0, 0.2, 0.2, 0.07, 0.07]), structure=[4, [], False], clusters=4)
+freqs = frequencies.Frequencies(train_path='../data/training_03_04_rotated_speeds.txt', edges_of_cell=np.array([3600.0, 0.2, 0.2, 0.1, 0.1]), structure=[4, [6646.15384615, 6171.42857143, 3756.52173913, 10800.0], False], clusters=4)
 finish = time()
 print('whole creation of model time: ' + str(finish-start))
+print('clusters: ' + str(freqs.C))
+
+start = time()
+print('RMSE between target and prediction is: ' + str(freqs.rmse('../data/training_03_04_rotated_speeds.txt')))
+finish = time()
+print('whole rmse time: ' + str(finish-start))
+
+
+#out = freqs.model_to_directions(path='../data/training_03_04_rotated_speeds.txt')
+#print(np.sum(out[:,-1]))
+#np.savetxt('../data/model_of_8angles_0.5m.txt', out)
+
+
 
 """
 periodicities = fremen.get_periodicities(path='/home/tom/pro/my/whyte_branches/2020_icra_RAL/data/data_for_visualization/two_weeks_days_nights_weekends_only_ones_times_only.txt', number_of_periods=periods, max_periods=60*60*24*7)

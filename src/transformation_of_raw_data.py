@@ -39,6 +39,11 @@ phi = my_signum*np.arccos(vel_t[:,0]/v)
 
 data = np.c_[time, vec_t, phi, v, ones]
 
-filtered = data[(data[:,1]>-9.25) & (data[:,1]<3.0) & (data[:,2]>0.1) & (data[:,2]<16.0), :]
+filtered = data[(data[:,1]>-9.25) & (data[:,1]<3.0) & (data[:,2]>0.1) & (data[:,2]<13.3), :]
 
 np.savetxt('../data/training_03_04_rotated.txt', filtered)
+
+
+data = np.c_[time, vec_t, vel_t, ones]
+filtered = data[(data[:,1]>-9.25) & (data[:,1]<3.0) & (data[:,2]>0.1) & (data[:,2]<13.3), :]
+np.savetxt('../data/training_03_04_rotated_speeds.txt', filtered)

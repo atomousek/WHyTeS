@@ -24,10 +24,17 @@ cdef inline void rounding_and_indexes(const double[:,:] dataset, const double[:]
             indexes[j] = floor((dataset[i, j] - starting_points[j]) / edges[j])
         for k in xrange(columns):
             tmp = indexes[k]
+            #print('k: ' + str(k))
+            #print('index: ' + str(indexes[k]))
             for l in xrange(k):
                 tmp *= no_bins[l]
             position += tmp
+            #print('tmp: ' + str(tmp))
+            #if position > 6336:
+            #    print('pretekl jsem')
+        #print(position)
         out[<long>position] += dataset[i, columns]
+        #print(out[<long>position])
                 
         
 

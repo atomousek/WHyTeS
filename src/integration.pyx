@@ -31,6 +31,9 @@ cdef inline double expansion(const double [:] edges, const long [:] no_bins, con
             for id_n_p in xrange(no_periods):
                 bin_centre[base_dim + 2*id_n_p - 1] = cos(time*PI2/periodicities[id_n_p]) 
                 bin_centre[base_dim + 2*id_n_p] = sin(time*PI2/periodicities[id_n_p]) 
+            #for i in xrange(len(bin_centre)):
+            #    print(bin_centre[i])
+            #print('')
             for i in xrange(degrees):
                 bin_minus_C[i] = bin_centre[i] - C[i]
             distance = 0.0

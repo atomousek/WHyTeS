@@ -258,6 +258,11 @@ class Frequencies:
 
         y = prediction_over_grid.predict(self.edges_of_cell, no_bins, starting_points_plus, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)
 
+        print('dataset: ' + str(np.shape(dataset)))
+        print('edges: ' + str(self.edges_of_cell))
+        print('no_bins: ' + str(no_bins))
+        print('starting points: ' + str(starting_points))
+
         target = target_over_grid.target(dataset, self.edges_of_cell, no_bins, starting_points)
 
         """
@@ -280,7 +285,7 @@ class Frequencies:
         starting_points = np.array(bins_and_ranges[1])[:,0]
         starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
         dim = np.shape(dataset)[1] - 1
-        grid = generate_full_grid.predict(self.edges_of_cell, no_bins, starting_points_plus, dim)
+        grid = generate_full_grid.generate(self.edges_of_cell, no_bins, starting_points_plus, dim)
         if save:
             np.savetxt('../results/full_grid.txt', grid)
             return None
@@ -313,3 +318,81 @@ class Frequencies:
             X[:, dim: dim + 2] = np.c_[data[:, -1] * np.cos(data[:, -2]),
                                        data[:, -1] * np.sin(data[:, -2])]
         return X
+
+    def model_to_directions(self, path):
+        dataset = np.loadtxt(path)
+        bins_and_ranges = fg.get_bins_and_ranges(dataset[:, :-1], self.edges_of_cell)
+        no_bins = np.array(bins_and_ranges[0])
+        starting_points = np.array(bins_and_ranges[1])[:,0]
+        starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
+        periodicities = np.array(self.structure[1])
+        dim = np.shape(dataset)[1] - 1
+        PI2 = np.pi*2
+
+        # grid in t, x, y, v_x, v_y
+        grid = np.zeros((np.prod(no_bins), dim), dtype=np.float64)
+        #grid =
+        generate_full_grid.generate(self.edges_of_cell, no_bins, starting_points_plus, dim, grid)
+        #print(grid)
+        #print(starting_points_plus)
+        # prediction over that grid
+        y = prediction_over_grid.predict(self.edges_of_cell, no_bins, starting_points_plus, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.F)
+        #model = np.c_[grid, y]
+        
+        # velocity vectors over the grid
+        velocity = grid[:, -2:]
+        # speed calculated from the velocity vector
+        speed = np.sqrt(np.sum(velocity ** 2, axis=1))
+        # signum, where 0 -> 1, positive for v_y non-negative
+        my_signum = (velocity[:,1]>0.0)*2.0 - 1.0
+        # angles to the velocity (1, 0)
+        angle = my_signum*np.arccos(velocity[:,0]/speed)
+        # now, I have to move angles between -pi and -7pi/8 to "positive" values
+        # as I need the cell around pi (7pi/8 to 9pi/8)
+        #booleans = angle<(-7.0*np.pi/8.0)
+        #print('angle before: ' + str(angle[booleans]))
+        angle[angle<(-7.0*np.pi/8.0)] = 2*np.pi + angle[angle<(-7.0*np.pi/8.0)]
+        #print(angle)
+        #print('angle after: ' + str(angle[booleans]))
+
+
+        # t, x, y, angle, prediction (y)
+        angle_model = np.c_[grid[:, :1+self.structure[0]-2], angle, y]
+        #print(angle_model)
+        # cell edges for t, x, y, angle
+        #angle_edges = np.r_[self.edges_of_cell[:-2], np.pi/4.0]
+        angle_edges = np.array([86400.0, 0.5, 0.5, np.pi/4.0])
+
+        #bins_and_ranges = fg.get_bins_and_ranges(angle_model[:, :-1], angle_edges)
+        #print('bins_and_ranges: ' + str(bins_and_ranges))
+        #no_bins = np.array(bins_and_ranges[0])
+        #starting_points = np.array(bins_and_ranges[1])[:,0]
+        #print(starting_points)
+        #print(angle_edges)
+        #print(self.edges_of_cell)
+        #starting_points_plus = starting_points + (angle_edges * 0.5)
+        #dim = len(angle_edges)
+
+        # input values for angles integration
+        # now added by hand
+        no_bins = np.array([1, 24, 33, 8])
+        # 1552352967.4318142 is little bit lower then the lowest time - so everything is rounded to that value
+        central_points = np.array([1552352967.4318142 + 86400.0/2.0, -9.5, 0.25, -3.0*np.pi/4.0])
+        lower_edge_points = central_points - (angle_edges * 0.5)      
+        dim = len(angle_edges)
+        #print(dim)
+        #sums_over_angles = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        #print('sums_over_angles: ' + str(np.shape(sums_over_angles)))
+        grid_over_angles = np.zeros((np.prod(no_bins), dim), dtype=np.float64)
+        generate_full_grid.generate(angle_edges, no_bins, central_points, dim, grid_over_angles)
+        print('grid_over_angles: ' + str(np.shape(grid_over_angles)))
+
+        print('dataset: ' + str(np.shape(angle_model)))
+        print('edges: ' + str(angle_edges))
+        print('no_bins: ' + str(no_bins))
+        print('starting points: ' + str(lower_edge_points))
+
+        sums_over_angles = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        print('sums_over_angles: ' + str(np.shape(sums_over_angles)))
+        
+        return np.c_[grid_over_angles, sums_over_angles]

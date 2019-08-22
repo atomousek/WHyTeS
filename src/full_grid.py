@@ -38,6 +38,7 @@ def get_bins_and_ranges(data, edges_of_cell):
     # changed to general shape of cell
     bins_and_ranges = [[],[]]
     n, d = np.shape(data)
+    #print(np.shape(data))
     for i in range(d):
         min_i = np.min(data[:, i])
         max_i = np.max(data[:, i])
