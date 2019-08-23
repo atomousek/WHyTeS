@@ -52,7 +52,7 @@ class Directions:
     """
 
 
-    def __init__(self, clusters=3, structure=[2, [1.0, 1.0], [86400.0, 604800.0]]):
+    def __init__(self, clusters=3, structure=[2, [86400.0, 604800.0], True]):
         self.clusters = clusters
         self.structure = structure
 
