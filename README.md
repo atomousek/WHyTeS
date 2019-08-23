@@ -1,7 +1,6 @@
 # WHyTeS
 
-This repo contains datasets and experiments related to the ECMR 2019 and LTHMP ICRA 2019 workshop.
-The readme will be extended based on the ECMR reviews.
+git clone -b 2020_test_for_icra_RAL --single-branch https://github.com/atomousek/WHyTeS
 
 
 **software used during developement:**
