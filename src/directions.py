@@ -10,6 +10,7 @@ import numpy as np
 import target_over_grid
 import generate_full_grid
 import prediction_over_grid
+import speed_over_angles
 
 
 from time import time
@@ -218,40 +219,40 @@ class Directions:
         return X
 
 
-    def model_to_directions_for_kevin_no_time_dimension(self):#, path):
-        #dataset = np.loadtxt(path)
-        #bins_and_ranges = fg.get_bins_and_ranges(dataset[:, :-1], self.edges_of_cell)
-        #no_bins = np.array(bins_and_ranges[0])
-        #starting_points = np.array(bins_and_ranges[1])[:,0]
-        #starting_points_plus = starting_points + (self.edges_of_cell * 0.5)
-        # hopefully correct
+    def model_to_directions(self, time=0):#, angle_edges, central_points, finishes, steps):
+        """
+        this model is only for specialized task, where the model was created without the time domain, 
+        but it is definitely also the testing version for the real function, which will be used for the evaluation method
+        """
+        # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
         edges = np.array([0.25, 0.25, 0.1, 0.1])
+        #edges = np.array([1.0, 1.0, 1.0, 1.0])
         starting_bins_centres = np.array([-10.5, -0.75, -4.0, -4.0])
         finishing_bins_centres = np.array([3.0, 17.25, 4.0, 4.0])
-        #edges = np.array([0.1, 0.1])
-        #starting_bins_centres = np.array([-4.0, -4.0])
-        #finishing_bins_centres = np.array([4.0, 4.0])
+        # derived parameters
         no_bins = (((finishing_bins_centres - starting_bins_centres)/ edges) + 1.0).astype(int)
-        periodicities = np.array([])
         dim = 4
-        #dim = 2
-        PI2 = np.pi*2
 
-        # grid in x, y, v_x, v_y
-        #grid = np.zeros((np.prod(no_bins), dim), dtype=np.float64)
-        start = time()
+        # grid in x, y, v_x, v_y; for model creation
         grid = generate_full_grid.generate(edges, no_bins, starting_bins_centres, dim)#, grid)
-        finish = time()
-        print(finish-start)
-        #print(grid)
-        #print(starting_points_plus)
+
         # prediction over that grid
-        start = time()
+
+        # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
+        edges = np.array([1.0, 0.25, 0.25, 0.1, 0.1])
+        #edges = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
+        starting_bins_centres = np.array([time, -10.5, -0.75, -4.0, -4.0])
+        finishing_bins_centres = np.array([time, 3.0, 17.25, 4.0, 4.0])
+        # derived parameters
+        no_bins = (((finishing_bins_centres - starting_bins_centres)/ edges) + 1.0).astype(int)
+        dim = 5
+        periodicities = np.array(self.structure[1])
+        PI2 = np.pi*2
         y = prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
-        finish = time()
-        print(finish-start)
-        #model = np.c_[grid, y]
+        #python_y = self.predict(grid)
+        #np.savetxt('../data/smaz.txt', np.c_[grid, y, python_y])
         
+        # projection of grid into x, y, velocity and speed
         # velocity vectors over the grid
         velocity = grid[:, -2:]
         # speed calculated from the velocity vector
@@ -263,55 +264,29 @@ class Directions:
         # now, I have to move angles between -pi and -7pi/8 to "positive" values
         # as I need the cell around pi (7pi/8 to 9pi/8)
         angle[angle<(-7.0*np.pi/8.0)] = 2*np.pi + angle[angle<(-7.0*np.pi/8.0)]
-        #print('angle[angle==(-7.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(-7.0*np.pi/8.0)) & (angle<(-5.0*np.pi/8.0))])))
-        #print('angle[angle==(-5.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(-5.0*np.pi/8.0)) & (angle<(-3.0*np.pi/8.0))])))
-        #print('angle[angle==(-3.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(-3.0*np.pi/8.0)) & (angle<(-1.0*np.pi/8.0))])))
-        #print('angle[angle==(-1.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(-1.0*np.pi/8.0)) & (angle<(1.0*np.pi/8.0))])))
-        #print('angle[angle==(1.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(1.0*np.pi/8.0)) & (angle<(3.0*np.pi/8.0))])))
-        #print('angle[angle==(3.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(3.0*np.pi/8.0)) & (angle<(5.0*np.pi/8.0))])))
-        #print('angle[angle==(5.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(5.0*np.pi/8.0)) & (angle<(7.0*np.pi/8.0))])))
-        #print('angle[angle==(7.0*np.pi/8.0)]: ' + str(len(angle[(angle>=(7.0*np.pi/8.0)) & (angle<(9.0*np.pi/8.0))])))
-
-        #np.savetxt('smaz.txt', np.c_[grid, speed, angle, my_signum])
-        #return None
-        
-
         # predicted values limited only for the speed lower than 4 m/s
         y[speed>4.0] = -1
         # x, y (first two columns from grid), angle, prediction (y)
-        angle_model = np.c_[grid[:, : 2], angle, y]
-        #print(angle_model)
+        #angle_model = np.c_[grid[:, : 2], angle, y]
+        angle_model = np.c_[grid[:, : 2], angle, y, speed]
         # cell edges for x, y, angle
         angle_edges = np.array([0.5, 0.5, np.pi/4.0])
 
-        # input values for angles integration
+        # input values for angles integration - gathered from the question by the evaluation system
         # now added by hand
         no_bins = np.array([24, 33, 8])
         # 1552352967.4318142 is little bit lower then the lowest time - so everything is rounded to that value
+        # as the time would be included in the prediction, but it is constant for this calculation, it should not be included
         central_points = np.array([-9.5, 0.25, -3.0*np.pi/4.0])
         lower_edge_points = central_points - (angle_edges * 0.5)      
         dim = len(angle_edges)
-        #print(dim)
-        #sums_over_angles = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
-        #print('sums_over_angles: ' + str(np.shape(sums_over_angles)))
-        #grid_over_angles = np.zeros((np.prod(no_bins), dim), dtype=np.float64)
-        start = time()
+
+        # create grid in the new projection
         grid_over_angles = generate_full_grid.generate(angle_edges, no_bins, central_points, dim)#, grid_over_angles)
-        finish = time()
-        print(finish-start)
-        #print('grid_over_angles: ' + str(np.shape(grid_over_angles)))
-        a = np.zeros(3)
-        #print('jsem tu')
-        #
-        #print('dataset: ' + str(np.shape(angle_model)))
-        #print('edges: ' + str(angle_edges))
-        #print('no_bins: ' + str(no_bins))
-        #print('starting points: ' + str(lower_edge_points))
-        #
-        start = time()
-        sums_over_angles, count = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
-        finish = time()
-        print(finish-start)
-        #print('sums_over_angles: ' + str(np.shape(sums_over_angles)))
-        
-        return np.c_[grid_over_angles, sums_over_angles, count]
+        # summing up all the predicted values in the cells of new projection
+        sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        # not necessary to return count, count is only for testing the symetry
+        return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean, positions_sum]
+        #sums_over_angles, speed_weighted_mean = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        ## not necessary to return count, count is only for testing the symetry
+        #return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean]
