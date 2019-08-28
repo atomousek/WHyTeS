@@ -162,12 +162,12 @@ def build_frequencies(longest, shortest, remove_one=-1.0):  # should be part of 
     """
     k = int(longest / shortest)  # + 1
     W = np.float64(np.arange(k) + 1) / float(longest) # removed zero periodicity
-    if remove != -1:
-        idx = np.argmin(W - 1.0/remove)
-        if W[idx] - remove < 1e-14:
+    if remove_one != -1:
+        idx = np.argmin(W - 1.0/remove_one)
+        if W[idx] - remove_one < 1e-14:
             W = W[range(0,idx)+range(idx+1, len(W))]
         else:
-            print('cannot remove: ' + str(remove))
+            print('cannot remove: ' + str(remove_one))
     return W
 
 
