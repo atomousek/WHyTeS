@@ -72,6 +72,7 @@ print('time to save model for specific time: ' + str(finish-start))
 #print(np.sum(out[:,-1]))
 
 
+#tester = tm.Tester()
 tester = tm.Tester(radius_of_robot=1.)
 
 edges_of_cell = [3600., 0.5, 0.5]
