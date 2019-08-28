@@ -40,7 +40,7 @@ import numpy as np
 from collections import defaultdict
 
 
-def chosen_period(T, S, W, weights=1.0, return_all=False):
+def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     """
     input: T numpy array Nx1, time positions of measured values
            time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
@@ -71,7 +71,19 @@ def chosen_period(T, S, W, weights=1.0, return_all=False):
     # power spectral density ???
     #sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
     #sum_of_amplitudes = np.sum(np.absolute(G))
-    return P#, sum_of_amplitudes
+    if return_W:
+        if return_all:
+            print('return_W=True not supported with return_all=True')
+            return P, W
+        remove = 1.0/P
+        idx = np.argmin(W - remove)
+        if W[idx] - remove < 1e-14:
+            W = W[range(0,idx)+range(idx+1, len(W))]
+        else:
+            print('cannot remove: ' + str(P))
+        return P, W
+    else:
+        return P#, sum_of_amplitudes
 
 
 def complex_numbers_batch(T, S, W, weights):
@@ -138,7 +150,7 @@ def sum_by_times(T, S):
     return ts_array[:, 0], ts_array[:, 1]
 
 
-def build_frequencies(longest, shortest):  # should be part of initialization of learning
+def build_frequencies(longest, shortest, remove_one=-1.0):  # should be part of initialization of learning
     """
     input: longest float, legth of the longest wanted period in default
                           units
@@ -150,6 +162,12 @@ def build_frequencies(longest, shortest):  # should be part of initialization of
     """
     k = int(longest / shortest)  # + 1
     W = np.float64(np.arange(k) + 1) / float(longest) # removed zero periodicity
+    if remove != -1:
+        idx = np.argmin(W - 1.0/remove)
+        if W[idx] - remove < 1e-14:
+            W = W[range(0,idx)+range(idx+1, len(W))]
+        else:
+            print('cannot remove: ' + str(remove))
     return W
 
 
