@@ -288,10 +288,9 @@ class PathFinder:
     def extract_intersections(self, path, radius):
         self.intersections = []
         data = np.loadtxt(path)
-        data = data[data[:, 0].argsort()]
+        # data = data[data[:, 0].argsort()]
         # np.savetxt('../data/test_dataset_all.txt', data)
         # data = self._round_time(data)
-        k = 0
         counter = 0
 
         for position in self.trajectory:
@@ -308,30 +307,6 @@ class PathFinder:
                 if dist <= radius:
                     self.intersections.append((data[index, 0], data[index, 1], data[index, 2],  data[index, 7], 3))
                     counter += 1
-
-
-            # if k < len(data[:, 0]) and data[k, 0] > position[0]:
-            #   pass
-            #
-            # while k < len(data[:, 0]) and 0 <= position[0] - data[k, 0] < 1:
-            #     x_pedestrian = data[k, 1]
-            #     y_pedestrian = data[k, 2]
-            #     dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
-            #     if dist <= radius:
-            #         self.intersections.append((data[k, 0], data[k, 1], data[k, 2],  data[k, 7], 3))
-            #         counter += 1
-            #     k += 1
-            #
-            # m = k + 1
-            #
-            # while m < len(data[:, 0]) and 0 <= data[m, 0] - position[0] < 1:
-            #     x_pedestrian = data[m, 1]
-            #     y_pedestrian = data[m, 2]
-            #     dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
-            #     if dist <= radius:
-            #         self.intersections.append((data[m, 0], data[m, 1], data[m, 2], data[m, 7], 3))
-            #         counter += 1
-            #     m += 1
 
         np.savetxt('../results/intersections.txt', np.array(self.intersections))
 
