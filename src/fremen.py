@@ -76,8 +76,8 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
             print('return_W=True not supported with return_all=True')
             return P, W
         remove = 1.0/P
-        idx = np.argmin(W - remove)
-        if W[idx] - remove < 1e-14:
+        idx = np.argmin(np.abs(W - remove))
+        if abs(W[idx] - remove) < 1e-14:
             W = W[range(0,idx)+range(idx+1, len(W))]
         else:
             print('cannot remove: ' + str(P))
