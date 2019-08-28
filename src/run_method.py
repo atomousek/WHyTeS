@@ -3,7 +3,7 @@ this is an example, how to run the method
 """
 import directions
 import fremen
-
+import run_testing_method as tm
 import numpy as np
 from time import time
 
@@ -64,10 +64,15 @@ start = time()
 #out = dirs.model_to_directions_for_kevin_no_time_dimension()
 out = dirs.model_to_directions(1554139930)
 #np.savetxt('../data/model_of_8angles_0.5m_over_month.txt', out)
-np.savetxt('../data/1554139930.txt', out)
+np.savetxt('../data/1554139930_model.txt', out)
 finish = time()
 print('time to save model for specific time: ' + str(finish-start))
 #print(np.sum(out[:,-1]))
 
+
+tester = tm.Tester()
+
+edges_of_cell = [3600., 0.5, 0.5]
+print tester.test_model('../data/1554139930_model.txt', '../data/1554139930_test_data.txt', edges_of_cell, speed=1.0)
 
 

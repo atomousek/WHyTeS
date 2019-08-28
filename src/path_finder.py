@@ -285,22 +285,26 @@ class PathFinder:
         k = 0
         counter = 0
 
-        # for position in self.trajectory:
-        #     x_robot = position[1]
-        #     y_robot = position[2]
-        #     while k < len(data[:, 0]) and int(data[k, 0]) == int(position[0]): ############
-        #         x_pedestrian = data[k, 1]
-        #         y_pedestrian = data[k, 2]
-        #         dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
-        #         print dist
-        #         if dist <= radius:
-        #             self.intersections.append((data[k, 0], data[k, 1], data[k, 2], dist, 3))
-        #             counter += 1
-        #         k += 1
-
         for position in self.trajectory:
             x_robot = position[1]
             y_robot = position[2]
+
+            # mask = np.where((position[0] - 0.5 < data[:, 0]) & (position[0] + 0.5 > data[:, 0]))
+            #
+            #
+            # for index in mask[0]:
+            #     x_pedestrian = data[index, 1]
+            #     y_pedestrian = data[index, 2]
+            #     dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
+            #     if dist <= radius:
+            #         print dist
+            #         self.intersections.append((data[index, 0], data[index, 1], data[index, 2],  data[index, 7], 3))
+            #         counter += 1
+
+
+            if k < len(data[:, 0]) and data[k, 0] > position[0]:
+              pass
+
             while k < len(data[:, 0]) and 0 <= position[0] - data[k, 0] < 1:
                 x_pedestrian = data[k, 1]
                 y_pedestrian = data[k, 2]
@@ -324,6 +328,7 @@ class PathFinder:
         np.savetxt('../results/intersections.txt', np.array(self.intersections))
 
         if counter > 0:
+            return counter
             return len(np.unique(np.array(self.intersections)[:, 3]))
         else:
             return 0
