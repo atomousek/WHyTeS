@@ -62,7 +62,8 @@ print('RMSE between target and prediction is: ' + str(dirs.rmse('../data/test_da
 
 start = time()
 #out = dirs.model_to_directions_for_kevin_no_time_dimension()
-model_time = 1554105948
+#model_time = 1554105948
+model_time = 1554139930
 out = dirs.model_to_directions(model_time)
 #np.savetxt('../data/model_of_8angles_0.5m_over_month.txt', out)
 np.savetxt('../data/' + str(model_time) + '_model.txt', out)
