@@ -32,7 +32,7 @@ for number_of_clusters in xrange(1,11):
     print('\n######################\nnumber_of_clusters: ' + str(number_of_clusters))
     list_of_periodicities = []
 
-    for no_periodicities in xrange(1, 5):
+    for no_periodicities in xrange(1, 9):
         print('\nlist_of_periodicities: ' + str(list_of_periodicities))
         structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodicities, movement_included]  # suitable input
         #for i in xrange(4):
@@ -44,16 +44,19 @@ for number_of_clusters in xrange(1,11):
         dirs = dirs.fit('../data/training_dataset.txt')
         finish = time()
         print('time to create model: ' + str(finish-start))
-
+        """
         start = time()
         print('RMSE between target and prediction is: ' + str(dirs.rmse('../data/test_dataset.txt')))
         finish = time()
         print('time to calculate RMSE: ' + str(finish-start))
-        
+        """ 
         X, target = dirs.transform_data('../data/training_dataset.txt')
         pred_for_fremen = dirs.predict(X)
         sample_weights = target - pred_for_fremen
+        start = time()
         P, W = fremen.chosen_period(T=TS[:,0], S=TS[:,1], W=W, weights=sample_weights, return_W=True)
+        finish = time()
+        print('time to run fremen: ' + str(finish-start))
         print P
         print 1/W
         list_of_periodicities.append(P)
