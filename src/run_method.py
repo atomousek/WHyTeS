@@ -72,7 +72,7 @@ print('time to save model for specific time: ' + str(finish-start))
 #print(np.sum(out[:,-1]))
 
 
-tester = tm.Tester()
+tester = tm.Tester(radius_of_robot=1.)
 
 edges_of_cell = [3600., 0.5, 0.5]
 print tester.test_model('../data/' + str(model_time) + '_model.txt', '../data/' + str(model_time) + '_test_data.txt', edges_of_cell, speed=1.0)
