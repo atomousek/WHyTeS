@@ -298,41 +298,40 @@ class PathFinder:
             x_robot = position[1]
             y_robot = position[2]
 
-            # mask = np.where((position[0] - 0.5 < data[:, 0]) & (position[0] + 0.5 > data[:, 0]))
+            mask = np.where((position[0] - 0.5 < data[:, 0]) & (position[0] + 0.5 > data[:, 0]))
+
+
+            for index in mask[0]:
+                x_pedestrian = data[index, 1]
+                y_pedestrian = data[index, 2]
+                dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
+                if dist <= radius:
+                    self.intersections.append((data[index, 0], data[index, 1], data[index, 2],  data[index, 7], 3))
+                    counter += 1
+
+
+            # if k < len(data[:, 0]) and data[k, 0] > position[0]:
+            #   pass
             #
-            #
-            # for index in mask[0]:
-            #     x_pedestrian = data[index, 1]
-            #     y_pedestrian = data[index, 2]
+            # while k < len(data[:, 0]) and 0 <= position[0] - data[k, 0] < 1:
+            #     x_pedestrian = data[k, 1]
+            #     y_pedestrian = data[k, 2]
             #     dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
             #     if dist <= radius:
-            #         print dist
-            #         self.intersections.append((data[index, 0], data[index, 1], data[index, 2],  data[index, 7], 3))
+            #         self.intersections.append((data[k, 0], data[k, 1], data[k, 2],  data[k, 7], 3))
             #         counter += 1
-
-
-            if k < len(data[:, 0]) and data[k, 0] > position[0]:
-              pass
-
-            while k < len(data[:, 0]) and 0 <= position[0] - data[k, 0] < 1:
-                x_pedestrian = data[k, 1]
-                y_pedestrian = data[k, 2]
-                dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
-                if dist <= radius:
-                    self.intersections.append((data[k, 0], data[k, 1], data[k, 2],  data[k, 7], 3))
-                    counter += 1
-                k += 1
-
-            m = k + 1
-
-            while m < len(data[:, 0]) and 0 <= data[m, 0] - position[0] < 1:
-                x_pedestrian = data[m, 1]
-                y_pedestrian = data[m, 2]
-                dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
-                if dist <= radius:
-                    self.intersections.append((data[m, 0], data[m, 1], data[m, 2], data[m, 7], 3))
-                    counter += 1
-                m += 1
+            #     k += 1
+            #
+            # m = k + 1
+            #
+            # while m < len(data[:, 0]) and 0 <= data[m, 0] - position[0] < 1:
+            #     x_pedestrian = data[m, 1]
+            #     y_pedestrian = data[m, 2]
+            #     dist = ((x_robot - x_pedestrian) ** 2 + (y_robot - y_pedestrian) ** 2) ** 0.5
+            #     if dist <= radius:
+            #         self.intersections.append((data[m, 0], data[m, 1], data[m, 2], data[m, 7], 3))
+            #         counter += 1
+            #     m += 1
 
         np.savetxt('../results/intersections.txt', np.array(self.intersections))
 
@@ -405,11 +404,11 @@ if __name__ == "__main__":
 
     edges_of_cell = np.array([3600., 0.5, 0.5])
     path_finder = PathFinder('../data/1554139930_model.txt', edges_of_cell)
-    path_finder.creat_graph()
+    path_finder.creat_graph(True)
     walls = np.loadtxt('../data/artificial_boarders_of_space_in_UTBM.txt')
     path_finder.remove_walls(walls)
 
-    route = [(-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10), (1, 10), (1, 2), (-5, 2), (-5, 10)]
+    route = [(-5, 10), (2, 3), (-7, 1), (-5, 10)]
     path_finder.find_shortest_path(route)
     # path_finder.find_strange_path((-5, 10), (1, 10), (1, 2))
     path_finder.extract_path()
@@ -419,4 +418,4 @@ if __name__ == "__main__":
     data = np.loadtxt(testing_data_path)
     path_finder.extract_trajectory(path, np.min(data[:, 0]), speed=1)
     
-    print path_finder.extract_intersections(testing_data_path, 0.5)
+    print path_finder.extract_intersections(testing_data_path, 1.)
