@@ -8,7 +8,7 @@ import numpy as np
 from time import time
 
 # parameters for the method
-number_of_clusters = 2
+number_of_clusters = 20
 #number_of_spatial_dimensions = 2  # known from data
 number_of_spatial_dimensions = 4  # france data
 #list_of_periodicities = [21600.0, 43200.0, 86400.0, 86400.0*7.0]  # the most prominent periods, found by FreMEn
@@ -62,9 +62,10 @@ print('RMSE between target and prediction is: ' + str(dirs.rmse('../data/test_da
 
 start = time()
 #out = dirs.model_to_directions_for_kevin_no_time_dimension()
-out = dirs.model_to_directions(1554139930)
+model_time = 1554105948
+out = dirs.model_to_directions(model_time)
 #np.savetxt('../data/model_of_8angles_0.5m_over_month.txt', out)
-np.savetxt('../data/1554139930_model.txt', out)
+np.savetxt('../data/' + str(model_time) + '_model.txt', out)
 finish = time()
 print('time to save model for specific time: ' + str(finish-start))
 #print(np.sum(out[:,-1]))
@@ -73,6 +74,6 @@ print('time to save model for specific time: ' + str(finish-start))
 tester = tm.Tester()
 
 edges_of_cell = [3600., 0.5, 0.5]
-print tester.test_model('../data/1554139930_model.txt', '../data/1554139930_test_data.txt', edges_of_cell, speed=1.0)
+print tester.test_model('../data/' + str(model_time) + '_model.txt', '../data/' + str(model_time) + '_test_data.txt', edges_of_cell, speed=1.0)
 
 
