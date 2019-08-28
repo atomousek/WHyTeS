@@ -3,17 +3,17 @@ from sklearn.neighbors import KernelDensity
 import scipy.stats as st
 import numpy as np
 
+from time import time
+
 #import transformation_with_dirs as tr
 #import full_grid as fg
 #import integration
 #import multiprocessing as mp
-import target_over_grid
-import generate_full_grid
-import prediction_over_grid
-import speed_over_angles
+
+from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid
 
 
-from time import time
+from time import clock
 
 
 
@@ -225,7 +225,7 @@ class Directions:
         but it is definitely also the testing version for the real function, which will be used for the evaluation method
         """
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
-        edges = np.array([0.25, 0.25, 0.1, 0.1])
+        edges = np.array([0.25, 0.25, 0.2, 0.2])
         #edges = np.array([1.0, 1.0, 1.0, 1.0])
         starting_bins_centres = np.array([-10.5, -0.75, -4.0, -4.0])
         finishing_bins_centres = np.array([3.0, 17.25, 4.0, 4.0])
@@ -239,7 +239,7 @@ class Directions:
         # prediction over that grid
 
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
-        edges = np.array([1.0, 0.25, 0.25, 0.1, 0.1])
+        edges = np.array([1.0, 0.25, 0.25, 0.2, 0.2])
         #edges = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
         starting_bins_centres = np.array([time, -10.5, -0.75, -4.0, -4.0])
         finishing_bins_centres = np.array([time, 3.0, 17.25, 4.0, 4.0])
@@ -248,9 +248,24 @@ class Directions:
         dim = 5
         periodicities = np.array(self.structure[1])
         PI2 = np.pi*2
-        y = prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
-        #python_y = self.predict(grid)
-        #np.savetxt('../data/smaz.txt', np.c_[grid, y, python_y])
+        #start = clock()
+        #y = prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
+        #finish = clock()
+        #print('prediction_over_grid: ' + str(finish-start))
+        ## testing version in python - memory inefficient
+        #start = clock()
+        #random = np.array([[time, 0.0, 0.0, 0.0, 0.0]])
+        #transformed = self._create_X(random)[:, 4:].reshape(-1)
+        #extended = np.broadcast_to(transformed, (len(grid), len(transformed)))
+        #python_y = self.predict(np.c_[grid, extended])
+        #finish = clock()
+        #print('python prediction: ' + str(finish-start))
+        ## testing the same thiing with cython
+        start = clock()
+        y = one_time_prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
+        finish = clock()
+        #print('one_time_prediction_over_grid: ' + str(finish-start))
+        #print('je to rozdilne? : ' + str(np.sum(y != new_y)))
         
         # projection of grid into x, y, velocity and speed
         # velocity vectors over the grid
