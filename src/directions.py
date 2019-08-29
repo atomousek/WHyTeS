@@ -119,7 +119,7 @@ class Directions:
         clf = GaussianMixture(n_components=self.clusters, max_iter=500, init_params='random').fit(X)
         Pi = clf.weights_
         C = clf.means_
-        PREC = clf.precisions_*0.3
+        PREC = clf.precisions_
         return C, Pi, PREC
 
     def _projection(self, path):
@@ -131,7 +131,7 @@ class Directions:
         outputs:
             X ... numpy array, data projection
         """
-        dataset=np.loadtxt(path)
+        dataset=np.loadtxt(path)#[:3000, :]
         # old type of dataset
         #X = self._create_X(dataset[dataset[:, -1] == 1, : -1])
         X = self._create_X(dataset)

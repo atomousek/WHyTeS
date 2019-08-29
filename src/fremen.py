@@ -71,6 +71,7 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     # power spectral density ???
     #sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
     #sum_of_amplitudes = np.sum(np.absolute(G))
+    print('SUM OF AMPLITUDES: ' + str(np.sum(np.absolute(G))))
     if return_W:
         if return_all:
             print('return_W=True not supported with return_all=True')
