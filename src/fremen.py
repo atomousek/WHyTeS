@@ -1,29 +1,8 @@
 """
 basic FreMEn to find most influential periodicity, call
-chosen_period(T, time_frame_sums, time_frame_freqs, longest, shortest, W, ES):
+chosen_period(T, S, W):
 it returns the most influential period in the timeseries, where timeseries are
     the residues between reality and model
-where
-input: T numpy array Nx1, time positions of measured values
-       time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
-                                                        over every
-                                                        timeframe
-       time_frame_freqs numpy array shape_of_grid[0]x1, sum of
-                                                        frequencies(stat)
-                                                        in model
-                                                        over every
-                                                        timeframe
-       W numpy array Lx1, sequence of reasonable frequencies
-       ES float64, squared sum of squares of residues from the last
-                   iteration
-and
-output: P float64, length of the most influential frequency in default
-        units
-        W numpy array Lx1, sequence of reasonable frequencies without
-                           the chosen one
-        ES_new float64, squared sum of squares of residues from
-                        this iteration
-        dES float64, difference between last and new error
 
 for the creation of a list of reasonable frequencies call
 build_frequencies(longest, shortest):
@@ -43,23 +22,13 @@ from collections import defaultdict
 def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     """
     input: T numpy array Nx1, time positions of measured values
-           time_frame_sums numpy array shape_of_grid[0]x1, sum of measures
-                                                            over every
-                                                            timeframe
-           time_frame_freqs numpy array shape_of_grid[0]x1, sum of
-                                                            frequencies(stat)
-                                                            over every
-                                                            timeframe
+           S numpy array Nx1, difference between predicted and measured values
            W numpy array Lx1, sequence of reasonable frequencies
-           ES float64, squared sum of squares of residues from the last
-                       iteration
-    output: P float64, length of the most influential frequency in default
-            units
-            W numpy array Lx1, sequence of reasonable frequencies without
-                               the chosen one
-            ES_new float64, squared sum of squares of residues from
-                            this iteration
-            dES float64, difference between last and new error
+           weights float or numpy array Nx1, weights of every measurement (or error)
+           return_all boolean, if True, FreMEn returns all periodicities ordered by prominence
+           return_W boolean, if True, FreMEn returns W without chosen frequency
+    output: P float64, length of the most influential periodicity in default units
+            W numpy array Lx1, sequence of reasonable frequencies without the chosen one
     uses: np.sum(), np.max(), np.absolute()
           complex_numbers_batch(), max_influence()
     objective: to choose the most influencing period in the timeseries, where
@@ -69,9 +38,7 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     G = complex_numbers_batch(T, S, W, weights)
     P = max_influence(W, G, return_all)
     # power spectral density ???
-    #sum_of_amplitudes =  np.sum(np.absolute(G) ** 2)
-    #sum_of_amplitudes = np.sum(np.absolute(G))
-    print('SUM OF AMPLITUDES: ' + str(np.sum(np.absolute(G))))
+    #print('SUM OF AMPLITUDES: ' + str(np.sum(np.absolute(G))))
     if return_W:
         if return_all:
             print('return_W=True not supported with return_all=True')
@@ -97,14 +64,8 @@ def complex_numbers_batch(T, S, W, weights):
     uses: np.e, np.newaxis, np.pi, np.mean()
     objective: to find sparse(?) frequency spectrum of the sequence S
     """
-    #Gs = S * (np.e ** (W[:, np.newaxis] * T * (-1j) * np.pi * 2))
-    #print('mam Gs')
-    #G = np.mean(Gs, axis=1)
-    # this is for RAM optimized version
-    #t, s = sum_by_times(T, S)   removed sum_by_times
     G = []
     for i in xrange(len(W)):
-        #Gs = s * (np.e ** (W[i] * t * (-1j) * np.pi * 2))
         Gs = weights * S * (np.e ** (W[i] * T * (-1j) * np.pi * 2))
         G.append(np.mean(Gs))
     G = np.array(G)
@@ -138,17 +99,6 @@ def max_influence(W, G, return_all=False):
         else:
             P = 1 / influential_frequency
         return P
-
-
-def sum_by_times(T, S):
-    """
-    """
-    TS = np.c_[T, S]
-    ts_dict = defaultdict(float)
-    for t, s in TS:
-        ts_dict[t] += s
-    ts_array = np.array(ts_dict.items())
-    return ts_array[:, 0], ts_array[:, 1]
 
 
 def build_frequencies(longest, shortest, remove_one=-1.0):  # should be part of initialization of learning

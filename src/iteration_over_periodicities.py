@@ -24,7 +24,7 @@ print('')
 number_of_periodicities = 10
 
 
-for number_of_clusters in xrange(9,10):
+for number_of_clusters in xrange(1,2):
     print('####################')
     print('number of clusters: ' +str(number_of_clusters))
     W=fremen.build_frequencies(60*60*24*7, 60*60)
