@@ -1,13 +1,13 @@
 # clone branch to separate directory
 
-git clone -b 2020_icra_RAL --single-branch https://github.com/atomousek/WHyTeS
+git clone -b trash_2020_icra_RAL --single-branch https://github.com/atomousek/WHyTeS
 
 # Pedestrian flows modelling using WHyTe and testing using Breadth first search
 
 In progress. Not functional.
 
-This repo contains datasets and experiments related to the RAL (icra2020).
-The readme will be extended based on the RAL reviews.
+This repo contains codes related to the RAL (icra2020).
+
 
 
 **software used during developement:**
