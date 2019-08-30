@@ -1,5 +1,5 @@
 """
-this is an example, how to run the method
+Martin's testing of parameters, do not touch! :)
 """
 import directions
 import fremen

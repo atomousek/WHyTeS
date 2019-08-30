@@ -1,3 +1,6 @@
+"""
+part of Kerem's testing method, some old version, do not read :)
+"""
 import numpy as np
 import path_finder as pf
 

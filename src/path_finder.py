@@ -1,3 +1,6 @@
+"""
+part of Kerem's testing method, do not read :)
+"""
 import networkx
 from networkx.exception import NetworkXError
 import numpy as np

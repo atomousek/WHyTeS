@@ -1,3 +1,6 @@
+"""
+WHyTeS, under construction
+"""
 from sklearn.mixture import GaussianMixture
 from sklearn.neighbors import KernelDensity
 import scipy.stats as st
@@ -28,9 +31,6 @@ class Directions:
         C ... np.array, centres of clusters from the detections's model
         Pi ... np.array, weights of clusters from the detections's model
         PREC ... np.array, precision matrices of clusters from the detections's model
-        C_0 ... np.array, centres of clusters from the not-detections's model
-        Pi_0 ... np.array, weights of clusters from the not-detections's model
-        PREC_0 ... np.array, precision matrices of clusters from the not-detections's model
     methods:
         fit(training_path)
             objective:
