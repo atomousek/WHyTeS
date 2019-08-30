@@ -8,11 +8,6 @@ import numpy as np
 
 from time import time
 
-#import transformation_with_dirs as tr
-#import full_grid as fg
-#import integration
-#import multiprocessing as mp
-
 from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid
 
 
@@ -131,8 +126,8 @@ class Directions:
         outputs:
             X ... numpy array, data projection
         """
-        dataset=np.loadtxt(path)#[:3000, :]
-        # old type of dataset
+        dataset=np.loadtxt(path)
+        # for old type of dataset
         #X = self._create_X(dataset[dataset[:, -1] == 1, : -1])
         X = self._create_X(dataset)
         return X
@@ -204,10 +199,6 @@ class Directions:
         wavelengths = self.structure[1]
         X = np.empty((len(data), dim + (len(wavelengths) * 2) + self.structure[2]*2))
         X[:, : dim] = data[:, 1: dim + 1]
-        ## normalization
-        #minimum = np.min(data[:, 1: dim + 1], axis=0)
-        #maximum = np.max(data[:, 1: dim + 1], axis=0)
-        #X[:, : dim] = data[:, 1: dim + 1] * 2.0 / (maximum-minimum)
         for Lambda in wavelengths:
             X[:, dim: dim + 2] = np.c_[np.cos(data[:, 0] * 2 * np.pi / Lambda),
                                        np.sin(data[:, 0] * 2 * np.pi / Lambda)]
@@ -221,26 +212,19 @@ class Directions:
 
     def model_to_directions(self, time=0):#, angle_edges, central_points, finishes, steps):
         """
-        this model is only for specialized task, where the model was created without the time domain, 
-        but it is definitely also the testing version for the real function, which will be used for the evaluation method
+        this method is only for specialized task (RAL2020comparison)
         """
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
         edges = np.array([0.25, 0.25, 0.2, 0.2])
-        #edges = np.array([1.0, 1.0, 1.0, 1.0])
         starting_bins_centres = np.array([-10.5, -0.75, -4.0, -4.0])
         finishing_bins_centres = np.array([3.0, 17.25, 4.0, 4.0])
         # derived parameters
         no_bins = (((finishing_bins_centres - starting_bins_centres)/ edges) + 1.0).astype(int)
         dim = 4
-
         # grid in x, y, v_x, v_y; for model creation
         grid = generate_full_grid.generate(edges, no_bins, starting_bins_centres, dim)#, grid)
-
-        # prediction over that grid
-
-        # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
+        # prediction over that grid for specific time
         edges = np.array([1.0, 0.25, 0.25, 0.2, 0.2])
-        #edges = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
         starting_bins_centres = np.array([time, -10.5, -0.75, -4.0, -4.0])
         finishing_bins_centres = np.array([time, 3.0, 17.25, 4.0, 4.0])
         # derived parameters
@@ -248,24 +232,11 @@ class Directions:
         dim = 5
         periodicities = np.array(self.structure[1])
         PI2 = np.pi*2
+        # predict y, the most demanding function here
         #start = clock()
-        #y = prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
-        #finish = clock()
-        #print('prediction_over_grid: ' + str(finish-start))
-        ## testing version in python - memory inefficient
-        #start = clock()
-        #random = np.array([[time, 0.0, 0.0, 0.0, 0.0]])
-        #transformed = self._create_X(random)[:, 4:].reshape(-1)
-        #extended = np.broadcast_to(transformed, (len(grid), len(transformed)))
-        #python_y = self.predict(np.c_[grid, extended])
-        #finish = clock()
-        #print('python prediction: ' + str(finish-start))
-        ## testing the same thiing with cython
-        start = clock()
         y = one_time_prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
-        finish = clock()
+        #finish = clock()
         #print('one_time_prediction_over_grid: ' + str(finish-start))
-        #print('je to rozdilne? : ' + str(np.sum(y != new_y)))
         
         # projection of grid into x, y, velocity and speed
         # velocity vectors over the grid
@@ -282,7 +253,6 @@ class Directions:
         # predicted values limited only for the speed lower than 4 m/s
         y[speed>4.0] = -1
         # x, y (first two columns from grid), angle, prediction (y)
-        #angle_model = np.c_[grid[:, : 2], angle, y]
         angle_model = np.c_[grid[:, : 2], angle, y, speed]
         # cell edges for x, y, angle
         angle_edges = np.array([0.5, 0.5, np.pi/4.0])
@@ -290,18 +260,12 @@ class Directions:
         # input values for angles integration - gathered from the question by the evaluation system
         # now added by hand
         no_bins = np.array([24, 33, 8])
-        # 1552352967.4318142 is little bit lower then the lowest time - so everything is rounded to that value
-        # as the time would be included in the prediction, but it is constant for this calculation, it should not be included
         central_points = np.array([-9.5, 0.25, -3.0*np.pi/4.0])
         lower_edge_points = central_points - (angle_edges * 0.5)      
         dim = len(angle_edges)
-
         # create grid in the new projection
         grid_over_angles = generate_full_grid.generate(angle_edges, no_bins, central_points, dim)#, grid_over_angles)
         # summing up all the predicted values in the cells of new projection
         sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
         # not necessary to return count, count is only for testing the symetry
         return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean, positions_sum]
-        #sums_over_angles, speed_weighted_mean = target_over_grid.target(angle_model, angle_edges, no_bins, lower_edge_points)
-        ## not necessary to return count, count is only for testing the symetry
-        #return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean]
