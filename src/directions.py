@@ -8,7 +8,7 @@ import numpy as np
 
 from time import time
 
-from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid
+from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid, one_time_prediction_over_grid_fast, upstream_over_angles
 
 
 from time import clock
@@ -167,7 +167,24 @@ class Directions:
         """
         X_C = X - C
         c_dist_x = np.sum(np.dot(X_C, PREC) * X_C, axis=1)
-        return 1 - st.chi2.cdf(c_dist_x, len(C))
+        #return 1 - st.chi2.cdf(c_dist_x, len(C))
+        #start = clock()
+        #a = 1 - st.chi2.cdf(c_dist_x, len(C))
+        #finish = clock()
+        #print('a: ' + str(finish-start))
+        #start = clock()
+        #b = 1 - st.chi2._cdf(c_dist_x, len(C))  # fastest
+        #finish = clock()
+        #print('b: ' + str(finish-start))
+        #start = clock()
+        #c = st.chi2.sf(c_dist_x, len(C))
+        #finish = clock()
+        #print('c: ' + str(finish-start))
+        #start = clock()
+        #d = st.chi2._sf(c_dist_x, len(C))
+        #finish = clock()
+        #print('d: ' + str(finish-start))
+        return st.chi2._sf(c_dist_x, len(C))
 
 
     def rmse(self, path):
@@ -215,18 +232,20 @@ class Directions:
         this method is only for specialized task (RAL2020comparison)
         """
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
-        edges = np.array([0.25, 0.25, 0.2, 0.2])
-        starting_bins_centres = np.array([-10.5, -0.75, -4.0, -4.0])
-        finishing_bins_centres = np.array([3.0, 17.25, 4.0, 4.0])
+        #edges = np.array([0.25, 0.25, 0.3, 0.3])
+        edges = np.array([0.5, 0.5, 0.3, 0.3])
+        starting_bins_centres = np.array([-10.5, -0.75, -3.0, -3.0])
+        finishing_bins_centres = np.array([3.0, 17.25, 3.0, 3.0])
         # derived parameters
         no_bins = (((finishing_bins_centres - starting_bins_centres)/ edges) + 1.0).astype(int)
         dim = 4
         # grid in x, y, v_x, v_y; for model creation
         grid = generate_full_grid.generate(edges, no_bins, starting_bins_centres, dim)#, grid)
         # prediction over that grid for specific time
-        edges = np.array([1.0, 0.25, 0.25, 0.2, 0.2])
-        starting_bins_centres = np.array([time, -10.5, -0.75, -4.0, -4.0])
-        finishing_bins_centres = np.array([time, 3.0, 17.25, 4.0, 4.0])
+        #edges = np.array([1.0, 0.25, 0.25, 0.3, 0.3])
+        edges = np.array([1.0, 0.5, 0.5, 0.3, 0.3])
+        starting_bins_centres = np.array([time, -10.5, -0.75, -3.0, -3.0])
+        finishing_bins_centres = np.array([time, 3.0, 17.25, 3.0, 3.0])
         # derived parameters
         no_bins = (((finishing_bins_centres - starting_bins_centres)/ edges) + 1.0).astype(int)
         dim = 5
@@ -237,7 +256,16 @@ class Directions:
         y = one_time_prediction_over_grid.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi)
         #finish = clock()
         #print('one_time_prediction_over_grid: ' + str(finish-start))
+        #
+        #table = np.random.rand(100000000)
+        #start = clock()
+        #neco = one_time_prediction_over_grid_fast.predict(edges, no_bins, starting_bins_centres, periodicities, dim, self.C, self.PREC, PI2, self.clusters, self.Pi, table)
+        #finish = clock()
+        #print('one_time_prediction_over_grid_fast: ' + str(finish-start))
+        #print((y==neco).all)
+        #np.savetxt('smaz.txt', np.c_[y, neco])
         
+        # projection of grid into x, y, velocity and speed
         # projection of grid into x, y, velocity and speed
         # velocity vectors over the grid
         velocity = grid[:, -2:]
@@ -266,6 +294,10 @@ class Directions:
         # create grid in the new projection
         grid_over_angles = generate_full_grid.generate(angle_edges, no_bins, central_points, dim)#, grid_over_angles)
         # summing up all the predicted values in the cells of new projection
-        sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
+
+        # DEFAULT AND CORRECT
+        #sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        # test
+        sums_over_angles, speed_weighted_mean, positions_sum = upstream_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
         # not necessary to return count, count is only for testing the symetry
         return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean, positions_sum]

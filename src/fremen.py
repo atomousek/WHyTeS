@@ -35,6 +35,8 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
                timeseries are the residues between reality and model
     """
     # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
+    # pokus
+    S = (S > np.mean(S))*1.0
     G = complex_numbers_batch(T, S, W, weights)
     P = max_influence(W, G, return_all)
     # power spectral density ???
