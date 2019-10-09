@@ -9,6 +9,7 @@ Python 2.7.15rc1,
 Numpy 1.16.3,
 sklearn 0.20.3,
 SciPy 1.2.1,
+dicttoxml 1.7.4
 
 **example, how to run method:**
 $ python run_method.py
@@ -20,3 +21,5 @@ timestamp,
 spatial variables,
 (optional) angle and speed
 
+**others:**
+sudo apt install python-dicttoxml
