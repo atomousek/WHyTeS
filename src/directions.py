@@ -2,16 +2,16 @@
 WHyTeS, under construction
 """
 from sklearn.mixture import GaussianMixture
-from sklearn.neighbors import KernelDensity
+#from sklearn.neighbors import KernelDensity
 import scipy.stats as st
 import numpy as np
-
+"""
 from time import time
 
 from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid, one_time_prediction_over_grid_fast, upstream_over_angles
 
-
 from time import clock
+"""
 
 
 
@@ -231,6 +231,8 @@ class Directions:
         """
         this method is only for specialized task (RAL2020comparison)
         """
+
+        """
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
         #edges = np.array([0.25, 0.25, 0.3, 0.3])
         edges = np.array([0.5, 0.5, 0.3, 0.3])
@@ -301,3 +303,39 @@ class Directions:
         sums_over_angles, speed_weighted_mean, positions_sum = upstream_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
         # not necessary to return count, count is only for testing the symetry
         return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean, positions_sum]
+        """
+
+
+    def model2xml(self):
+        import numpy as np
+        import dicttoxml
+        from xml.dom.minidom import parseString
+        import collections
+
+        variables = [self.C, self.Pi, self.PREC, np.array(self.structure[1])]
+        names = ['C', 'F', 'PREC', 'periodicities']
+        some_dict = collections.OrderedDict({'no_periods': len(self.structure[1]), 'no_clusters': self.clusters})
+        for idx, variable in enumerate(variables):
+            shape, values = self._numpy2dict(variable)
+            some_dict[names[idx]+'_shape'] = shape
+            some_dict[names[idx]+'_values'] = values
+        xml = dicttoxml.dicttoxml(some_dict)
+        dom = parseString(xml)
+        with open("whyte_map_better.xml", "w") as text_file:
+            text_file.write(dom.toprettyxml())
+        
+
+
+
+    def _numpy2dict(self, np_arr):
+        import collections
+        #shape = dict(enumerate(np.shape(np_arr)))
+        shape = collections.OrderedDict({})
+        for idx, val in enumerate(np.shape(np_arr)):
+            shape['s_'+str(idx)] = val
+        #values = dict(enumerate(np.reshape(np_arr, -1)))
+        np_arr = np.reshape(np_arr, -1)
+        values = collections.OrderedDict({})
+        for idx, val in enumerate(np_arr):
+            values['v_'+str(idx)] = val
+        return shape, values
