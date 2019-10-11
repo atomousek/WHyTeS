@@ -8,13 +8,11 @@ import numpy as np
 import collections
 import dicttoxml
 from xml.dom.minidom import parseString
-"""
-from time import time
+#from time import time
 
-from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid, one_time_prediction_over_grid_fast, upstream_over_angles
+from cython_files import generate_full_grid, speed_over_angles, one_time_prediction_over_grid
 
-from time import clock
-"""
+#from time import clock
 
 
 
@@ -235,7 +233,6 @@ class Directions:
         this method is only for specialized task (RAL2020comparison)
         """
 
-        """
         # default parameters, spatial range litle bit higher, speeds limited to 4m/s (probably 3m/s is very close to max)
         #edges = np.array([0.25, 0.25, 0.3, 0.3])
         edges = np.array([0.5, 0.5, 0.3, 0.3])
@@ -301,12 +298,11 @@ class Directions:
         # summing up all the predicted values in the cells of new projection
 
         # DEFAULT AND CORRECT
-        #sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        sums_over_angles, speed_weighted_mean, positions_sum = speed_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
         # test
-        sums_over_angles, speed_weighted_mean, positions_sum = upstream_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
+        #sums_over_angles, speed_weighted_mean, positions_sum = upstream_over_angles.target(angle_model, angle_edges, no_bins, lower_edge_points)
         # not necessary to return count, count is only for testing the symetry
         return np.c_[grid_over_angles, sums_over_angles, speed_weighted_mean, positions_sum]
-        """
 
 
     def model2xml(self):

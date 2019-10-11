@@ -37,6 +37,9 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
     # pokus
     S = (S > np.mean(S))*1.0
+    #print('S: ' + str(S))
+    #print('len(S): ' + str(len(S)))
+    #print('np.sum(S): ' + str(np.sum(S)))
     G = complex_numbers_batch(T, S, W, weights)
     P = max_influence(W, G, return_all)
     # power spectral density ???
