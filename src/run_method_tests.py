@@ -8,7 +8,7 @@ import numpy as np
 from time import time
 
 # parameters for the method
-number_of_clusters = 3
+number_of_clusters = 2
 #number_of_spatial_dimensions = 2  # known from data
 number_of_spatial_dimensions = 4  # france data
 #list_of_periodicities = [21600.0, 43200.0, 86400.0, 86400.0*7.0]  # the most prominent periods, found by FreMEn on different data :)
@@ -21,11 +21,23 @@ structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodiciti
 # load and train the predictor
 start = time()
 dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
-dirs = dirs.fit('../data/training_dataset.txt')
+#dirs = dirs.fit('../data/training_dataset.txt')
+dirs = dirs.fit('../data/training_dataset_new_format.txt')
 finish = time()
 print('time to create model: ' + str(finish-start))
 
 dirs.model2xml()
+#np.savetxt('C.txt', dirs.C)
+#np.savetxt('W.txt', dirs.W)
+#for idx, prec in enumerate(dirs.PREC):
+#    np.savetxt('PREC' + str(idx) + '.txt', prec)
+#
+#X = dirs.transform_data('../data/training_dataset_new_format.txt')[0]
+#y = dirs.predict(X)
+#np.savetxt('predictions.txt', y)
+#data = np.loadtxt('../data/training_dataset_new_format.txt')[:, [0, 2, 3, 6, 5]]
+#np.savetxt('test_dataset_to_test.txt', data)
+
 
 
 """

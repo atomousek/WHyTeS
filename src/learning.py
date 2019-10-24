@@ -16,7 +16,7 @@ number_of_clusters = 1
 number_of_spatial_dimensions = 2  # france data
 movement_included = False  # using velocity vector precalculated in dataset.
 
-
+# time [ms] (unixtime + milliseconds/1000), person id, position x [mm], position y [mm], position z (height) [mm], velocity [mm/s], angle of motion [rad], facing angle [rad]
 #TS = np.loadtxt('../data/training_dataset.txt')[:, [0,-1]]
 T = np.loadtxt('../data/training_dataset.txt')[:, 0]
 number_of_periodicities = 5  # max number of periodicities

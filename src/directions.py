@@ -81,7 +81,8 @@ class Directions:
             X ... np.array, test dataset transformed into the hypertime space
             target ... target values
         """
-        dataset=np.loadtxt(path)
+        #dataset=np.loadtxt(path)
+        dataset = self.load_data(path)
         X = self._create_X(dataset)
         target = np.ones(len(dataset))
         if for_fremen:
@@ -117,7 +118,8 @@ class Directions:
         outputs:
             X ... numpy array, data projection
         """
-        dataset=np.loadtxt(path)
+        #dataset=np.loadtxt(path)
+        dataset = self.load_data(path)
         X = self._create_X(dataset)
         return X
 
@@ -198,7 +200,7 @@ class Directions:
             some_dict[names[idx]+'_values'] = values
         xml = dicttoxml.dicttoxml(some_dict)
         dom = parseString(xml)
-        with open("whyte_map_better.xml", "w") as text_file:
+        with open("whyte_map.xml", "w") as text_file:
             text_file.write(dom.toprettyxml())
         
 
@@ -220,3 +222,21 @@ class Directions:
         for idx, val in enumerate(np_arr):
             values['v_'+str(idx)] = val
         return shape, values
+
+
+    def load_data(self, path):
+        """
+        objective: 
+            load data from the format: 
+                time [ms] (unixtime + milliseconds/1000), person id, position x [mm], position y [mm], position z (height) [mm], velocity [mm/s], angle of motion [rad], facing angle [rad]
+            and return them in required format
+        input:
+            path ... string, address of the file
+        output:
+            dataset ... numpy array, (t, x, y, v_x, v_y)
+        """
+        data = np.loadtxt(path)[:, [0, 2, 3, 5, 6]]
+        v_x = np.cos(data[:, -1]) * data[:, -2]
+        v_y = np.sin(data[:, -1]) * data[:, -2]
+        return np.c_[data[:, :-2], v_x, v_y]
+        

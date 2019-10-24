@@ -26,7 +26,7 @@ double WHyTe::getLikelihood(double time, double x, double y, double heading, dou
             W .. set of cluster weights
             PREC .. set of precision matices (inversed covariance matrices)
     */
-    double spatial_dim = 4;  // pos_x, pos_y, vel_x, vel_y
+    long spatial_dim = 4;  // pos_x, pos_y, vel_x, vel_y
     double degrees = spatial_dim + 2 * no_periods; // degrees of freedom for chi2
     double distance; //mahalanobis distance between each C and projection
     double tmp; // subtotal during distance calculation
