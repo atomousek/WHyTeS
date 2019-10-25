@@ -82,7 +82,7 @@ class Directions:
             target ... target values
         """
         #dataset=np.loadtxt(path)
-        dataset = self.load_data(path)
+        dataset = self._load_data(path)
         X = self._create_X(dataset)
         target = np.ones(len(dataset))
         if for_fremen:
@@ -119,7 +119,7 @@ class Directions:
             X ... numpy array, data projection
         """
         #dataset=np.loadtxt(path)
-        dataset = self.load_data(path)
+        dataset = self._load_data(path)
         X = self._create_X(dataset)
         return X
 
@@ -224,7 +224,7 @@ class Directions:
         return shape, values
 
 
-    def load_data(self, path):
+    def _load_data(self, path):
         """
         objective: 
             load data from the format: 

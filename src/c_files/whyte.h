@@ -6,7 +6,7 @@
 
 /* apt sudo install libgsl-dev
    LDFLAGS of GSL: -lgsl -lgslcblas -lm
-   g++ -Wall -O2 -march=native main.cpp whyte.cpp -o main -lgsl -lgslcblas -lm */
+   g++ -Wall -O2 -march=native main.cpp whyte.cpp -o main -lgsl -lgslcblas -lm -lboost_filesystem */
 
 class WHyTe
 {
@@ -15,6 +15,7 @@ public:
     ~WHyTe();
     
     void readFromXML(const std::string &fileName);
+
     double getLikelihood(double time, double x, double y, double heading, double speed);
 
 private:

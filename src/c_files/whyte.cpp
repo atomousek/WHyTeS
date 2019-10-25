@@ -1,6 +1,9 @@
 #include <cmath>
+#include <stdio.h>
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_randist.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include "whyte.h"
 
 WHyTe::WHyTe(){}
@@ -9,7 +12,68 @@ WHyTe::~WHyTe(){}
 
 void WHyTe::readFromXML(const std::string &fileName)
 {
+    boost::property_tree::ptree pTree;
 
+    boost::property_tree::read_xml(fileName, pTree);
+
+    // reading data shapes
+    no_clusters = pTree.get<long>("root.no_clusters");
+    no_periods = pTree.get<long>("root.no_periods");
+
+    long c_shape_rows = pTree.get<long>("root.C_shape.s_0");
+    long c_shape_cols = pTree.get<long>("root.C_shape.s_1");
+    C.resize(c_shape_rows);
+    for(long i = 0; i < c_shape_rows; i++)
+        C[i].resize(c_shape_cols);
+
+    long w_shape_size = pTree.get<long>("root.W_shape.s_0");
+    W.resize(w_shape_size);
+
+    long prec_shape_0 = pTree.get<long>("root.PREC_shape.s_0");
+    long prec_shape_1 = pTree.get<long>("root.PREC_shape.s_1");
+    long prec_shape_2 = pTree.get<long>("root.PREC_shape.s_2");
+    PREC.resize(prec_shape_0);  // resize to fit individual matrices
+    for(long i = 0; i < prec_shape_0; i++)
+    {
+        PREC[i].resize(prec_shape_1);  // resize to fit rows
+        for(long j = 0; j < prec_shape_1; j++)
+        {
+            PREC[i][j].resize(prec_shape_2);  // resize to fit cols
+        }
+    }
+
+    long periodicities_size = pTree.get<long>("root.periodicities_shape.s_0");
+    periodicities.resize(periodicities_size);
+
+    // reading data values
+    for(long rows = 0; rows < c_shape_rows; rows++)
+    {
+        for(long cols = 0; cols < c_shape_cols; cols++)
+        {
+            C[rows][cols] = pTree.get<double>("root.C_values.v_" + std::to_string(rows * c_shape_cols + cols));
+        }
+    }
+
+    for(long i = 0; i < w_shape_size; i++)
+    {
+        W[i] = pTree.get<double>("root.W_values.v_" + std::to_string(i));
+    }
+
+    for(long i = 0; i < prec_shape_0; i++)  // individual matrices
+    {
+        for(long j = 0; j < prec_shape_1; j++)  // rows
+        {
+            for(long k = 0; k < prec_shape_2; k++)  // cols
+            {
+                PREC[i][j][k] = pTree.get<double>("root.PREC_values.v_" + std::to_string((i * prec_shape_1 + j) * prec_shape_2 + k));
+            }
+        }
+    }
+
+    for(long i = 0; i < periodicities_size; i++)
+    {
+        periodicities[i] = pTree.get<double>("root.periodicities_values.v_" + std::to_string(i));
+    }
 }
 
 double WHyTe::getLikelihood(double time, double x, double y, double heading, double speed)

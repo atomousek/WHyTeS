@@ -7,8 +7,7 @@ int main(int argc, char *argv[])
 {
     WHyTe whyte;
 
-    // ready for file path as an argument
-    // whyte.readFromXML( file path );
+    whyte.readFromXML("whyte_map.xml");
 
     double time;
     double x;
@@ -25,7 +24,7 @@ int main(int argc, char *argv[])
         {
             prob = whyte.getLikelihood(time, x, y, heading, speed);
             //printf("prob: %f\n\n", prob);
-            printf("%.10f\n", prob);
+            printf("%.20f\n", prob);
         }
         else
         {
