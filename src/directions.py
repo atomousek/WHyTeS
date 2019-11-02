@@ -26,110 +26,115 @@ class Directions:
                 to train model
             input:
                 training_path ... string, path to training dataset
+                delimiter ... string, optional
+                skiprows ... int, optional
+                usecols ... iterable, optional
             output:
                 self
+        model2xml(address):
+            objective:
+                saves model to xml file to be readable from other sources
+            input:
+                address ... string, address to save the xml file
+            output:
+                None
         transform_data(path)
             objective:
-                return transformed data into warped hypertime space and also return target values (0 or 1)
+                returns transformed data into warped hypertime space
+                    optionally returns all timestamps
             input:
                 path ... string, path to the test dataset
+                for_fremen ... boolean, if True, method returns also array of timestamps
+                delimiter ... string, optional
+                skiprows ... int, optional
+                usecols ... iterable, optional
             outputs:
                 X ... np.array, test dataset transformed into the hypertime space
-                target ... target values
+                times ... np.array, timestamps, only when for_fremen=True
         predict(X)
             objective:
-                return predicted values
+                returns predicted values
             input:
-                X ... np.array, test dataset transformed into the hypertime space
+                X ... np.array, test dataset projected into the hypertime space
             output:
                 prediction ... probability of the occurrence of detections
-        rmse(path)
-            objective:
-                return rmse between prediction and target of a test dataset
-            inputs:
-                path ... string, path to the test dataset
-            output:
-                err ... float, root of mean of squared errors
     """
 
 
-    def __init__(self, clusters=2, structure=[4, [86400.0, 604800.0], False]):
+    def __init__(self, clusters=3, structure=[4, [86400.0]]):
         self.clusters = clusters
         self.structure = structure
+        self.C = None
+        self.W = None
+        self.PREC = None
 
 
-    def fit(self, training_path = '../data/two_weeks_days_nights_weekends_with_dirs.txt'):
+    def fit(self, training_path, delimiter=' ', skiprows=0, usecols=(0, 2, 3, 5, 6)):
         """
         objective:
             to train model
         input:
             training_path ... string, path to training dataset
+            delimiter ... string, optional
+            skiprows ... int, optional
+            usecols ... iterable, optional
         output:
             self
         """
-        self.C, self.W, self.PREC = self._estimate_distribution(training_path)
+        self.C, self.W, self.PREC = self._estimate_distribution(training_path, delimiter, skiprows, usecols)
         return self
 
 
-    def transform_data(self, path, for_fremen=False):
+    def model2xml(self, address='whyte_map.xml'):
         """
         objective:
-            return transformed data into warped hypertime space and also return target values (0 or 1)
+            saving model to xml file to be readable from other sources
+        input:
+            address ... string, address to save the xml file
+        output:
+            None
+        """
+        variables = [self.C, self.W, self.PREC, np.array(self.structure[1])]
+        names = ['C', 'W', 'PREC', 'periodicities']
+        some_dict = collections.OrderedDict({'no_periods': len(self.structure[1]), 'no_clusters': self.clusters})
+        for idx, variable in enumerate(variables):
+            shape, values = self._numpy2dict(variable)
+            some_dict[names[idx]+'_shape'] = shape
+            some_dict[names[idx]+'_values'] = values
+        xml = dicttoxml.dicttoxml(some_dict)
+        dom = parseString(xml)
+        with open(address, "w") as text_file:
+            text_file.write(dom.toprettyxml())
+
+
+    def transform_data(self, path, delimiter=' ', skiprows=0, usecols=(0, 2, 3, 5, 6), for_fremen=False):
+        """
+        objective:
+            returns transformed data into warped hypertime space and also return target values (only ones)
         input:
             path ... string, path to the test dataset
+            for_fremen ... boolean, if True, method returns also array of timestamps
+            delimiter ... string, optional
+            skiprows ... int, optional
+            usecols ... iterable, optional
         outputs:
             X ... np.array, test dataset transformed into the hypertime space
-            target ... target values
+            times ... np.array, timestamps, optional, only when for_fremen=True
         """
-        #dataset=np.loadtxt(path)
-        dataset = self._load_data(path)
+        dataset = self._load_data(path, delimiter, skiprows, usecols)
         X = self._create_X(dataset)
-        target = np.ones(len(dataset))
         if for_fremen:
-            return X, target, dataset[:, 0]
+            return X, dataset[:, 0]
         else:
-            return X, target
-
-
-    def _estimate_distribution(self, path):
-        """
-        objective:
-            return parameters of the mixture of gaussian distributions of the data from one class projected into the warped hypertime space
-        inputs:
-            path ... string, path to the test dataset
-        outputs:
-            C ... np.array, centres of clusters, estimation of expected values of each distribution
-            W ... np.array, weights of clusters
-            PREC ... np.array, precision matrices of clusters, inverse matrix to the estimation of the covariance of the distribution
-        """
-        X = self._projection(path)
-        clf = GaussianMixture(n_components=self.clusters, max_iter=500, init_params='random').fit(X)
-        W = clf.weights_
-        C = clf.means_
-        PREC = clf.precisions_
-        return C, W, PREC
-
-    def _projection(self, path):
-        """
-        objective:
-            return data projected into the warped hypertime
-        inputs:
-            path ... string, path to the test dataset
-        outputs:
-            X ... numpy array, data projection
-        """
-        #dataset=np.loadtxt(path)
-        dataset = self._load_data(path)
-        X = self._create_X(dataset)
-        return X
+            return X
 
 
     def predict(self, X):
         """
         objective:
-            return predicted values
+            returns predicted values
         input:
-            X ... np.array, test dataset transformed into the hypertime space
+            X ... np.array, test dataset projected into the hypertime space
         output:
             prediction ... probability of the occurrence of detections
         """
@@ -137,13 +142,35 @@ class Directions:
         for idx in xrange(self.clusters):
             DISTR.append(self.W[idx] * self._prob_of_belong(X, self.C[idx], self.PREC[idx]))
         DISTR = np.array(DISTR)
-        model_s = np.sum(DISTR, axis=0)
-        return model_s
+        prediction = np.sum(DISTR, axis=0)
+        return prediction
+
+
+    def _estimate_distribution(self, path, delimiter, skiprows, usecols):
+        """
+        objective:
+            returns parameters of the mixture of gaussian distributions of the data from one class (cluster) projected into the warped hypertime space
+        inputs:
+            path ... string, path to the test dataset
+            delimiter ... string
+            skiprows ... int
+            usecols ... iterable
+        outputs:
+            C ... np.array, centres of clusters, estimation of expected values of each distribution
+            W ... np.array, weights of clusters
+            PREC ... np.array, precision matrices of clusters, inverse matrix to the estimation of the covariance of the distribution
+        """
+        X = self.transform_data(path, delimiter, skiprows, usecols, for_fremen=False)
+        clf = GaussianMixture(n_components=self.clusters, max_iter=500, init_params='random').fit(X)
+        W = clf.weights_
+        C = clf.means_
+        PREC = clf.precisions_
+        return C, W, PREC
 
 
     def _prob_of_belong(self, X, C, PREC):
         """
-        massively inspired by:
+        inspired by:
         https://stats.stackexchange.com/questions/331283/how-to-calculate-the-probability-of-a-data-point-belonging-to-a-multivariate-nor
 
         objective:
@@ -164,44 +191,22 @@ class Directions:
     def _create_X(self, data):
         """
         objective:
-            return data of one class projected into the warped hypertime space
+            return data projected into the warped hypertime space
         input: 
             data numpy array nxd*, matrix of measures IRL, where d* is number of measured variables
                                    the first column need to be timestamp
-                                   last two columns can be phi and v, the angle and speed of human
         output: 
             X numpy array nxd, data projected into the warped hypertime space
         """
         dim = self.structure[0]
         wavelengths = self.structure[1]
-        X = np.empty((len(data), dim + (len(wavelengths) * 2) + self.structure[2]*2))
+        X = np.empty((len(data), dim + (len(wavelengths) * 2)))
         X[:, : dim] = data[:, 1: dim + 1]
         for Lambda in wavelengths:
             X[:, dim: dim + 2] = np.c_[np.cos(data[:, 0] * 2 * np.pi / Lambda),
                                        np.sin(data[:, 0] * 2 * np.pi / Lambda)]
             dim = dim + 2
-
-        if self.structure[2]:
-            X[:, dim: dim + 2] = np.c_[data[:, -1] * np.cos(data[:, -2]),
-                                       data[:, -1] * np.sin(data[:, -2])]
         return X
-
-
-    def model2xml(self):
-        """
-        objective: saving model to xml file to be readable from other sources
-        """
-        variables = [self.C, self.W, self.PREC, np.array(self.structure[1])]
-        names = ['C', 'W', 'PREC', 'periodicities']
-        some_dict = collections.OrderedDict({'no_periods': len(self.structure[1]), 'no_clusters': self.clusters})
-        for idx, variable in enumerate(variables):
-            shape, values = self._numpy2dict(variable)
-            some_dict[names[idx]+'_shape'] = shape
-            some_dict[names[idx]+'_values'] = values
-        xml = dicttoxml.dicttoxml(some_dict)
-        dom = parseString(xml)
-        with open("whyte_map.xml", "w") as text_file:
-            text_file.write(dom.toprettyxml())
         
 
     def _numpy2dict(self, np_arr):
@@ -224,7 +229,7 @@ class Directions:
         return shape, values
 
 
-    def _load_data(self, path):
+    def _load_data(self, path, delimiter, skiprows, usecols):
         """
         objective: 
             load data from the format: 
@@ -232,10 +237,13 @@ class Directions:
             and return them in required format
         input:
             path ... string, address of the file
+            delimiter ... string
+            skiprows ... int
+            usecols ... iterable
         output:
             dataset ... numpy array, (t, x, y, v_x, v_y)
         """
-        data = np.loadtxt(path)[:, [0, 2, 3, 5, 6]]
+        data = np.loadtxt(fname=path, delimiter=delimiter, skiprows=skiprows, usecols=usecols)
         v_x = np.cos(data[:, -1]) * data[:, -2]
         v_y = np.sin(data[:, -1]) * data[:, -2]
         return np.c_[data[:, :-2], v_x, v_y]

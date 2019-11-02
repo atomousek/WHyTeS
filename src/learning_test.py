@@ -9,7 +9,7 @@ from time import time
 import os
 
 # parameters for the method
-number_of_clusters = 11
+number_of_clusters = 3
 number_of_spatial_dimensions = 4  # france data, space and velocity
 #number_of_spatial_dimensions = 2  # france data, space only
 movement_included = False  # using velocity vector precalculated in dataset.
@@ -17,13 +17,14 @@ movement_included = False  # using velocity vector precalculated in dataset.
 
 #TS = np.loadtxt('../data/training_dataset.txt')[:, [0,-1]]
 T = np.loadtxt('../data/training_dataset.txt')[:, 0]
-number_of_periodicities = 7  # max number of periodicities
+number_of_periodicities = 3  # max number of periodicities
 list_of_times = np.loadtxt('../data/test_times.txt').astype(int)
 
 
 
 #for number_of_clusters in xrange(1, 7):
-for number_of_clusters in xrange(1, number_of_clusters+1):
+#for number_of_clusters in xrange(1, number_of_clusters+1):
+for number_of_clusters in xrange(number_of_clusters, number_of_clusters+1):
     print('####################')
     print('number of clusters: ' +str(number_of_clusters))
     W=fremen.build_frequencies(60*60*24*7, 60*60)
@@ -59,7 +60,7 @@ for number_of_clusters in xrange(1, number_of_clusters+1):
         print('RMSE: ' + str(np.sqrt(np.mean((pred_for_fremen - target) ** 2.0))))
 
         # create the directory (copied from https://thispointer.com/how-to-create-a-directory-in-python/ )
-        dirName = '/media/tom/ssd_ext/2021_ijrr_models/ral_variant_' + str(number_of_clusters) + '_clusters_' + str(no_periodicities) + '_periodicities/'
+        dirName = '/media/tom/ssd_ext/2021_ijrr_models/ral_S_' + str(number_of_clusters) + '_clusters_' + str(no_periodicities) + '_periodicities/'
         if not os.path.exists(dirName):
             os.makedirs(dirName)
             print("Directory " , dirName ,  " Created ")
@@ -67,7 +68,8 @@ for number_of_clusters in xrange(1, number_of_clusters+1):
             print("Directory " , dirName ,  " already exists")  
 
         #testing on the testing datasets
-        if no_periodicities > -1:
+        #if no_periodicities > -1:
+        if no_periodicities == 3:
             start_all = time()
             counter = 0
             for model_time in list_of_times:

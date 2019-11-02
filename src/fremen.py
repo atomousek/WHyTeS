@@ -16,7 +16,6 @@ It is necessary to understand what periodicities you are looking for (or what
 """
 
 import numpy as np
-from collections import defaultdict
 
 
 def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
@@ -35,7 +34,6 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
                timeseries are the residues between reality and model
     """
     # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
-    # pokus
     S = (S > np.mean(S))*1.0
     #print('S: ' + str(S))
     #print('len(S): ' + str(len(S)))
