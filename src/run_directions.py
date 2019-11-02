@@ -36,7 +36,7 @@ structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodiciti
 dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
 
 # create the model
-dirs = dirs.fit(training_dataset_address, delimiter, skiprows)
+dirs = dirs.fit(training_dataset_address, delimiter, skiprows, usecols)
 
 # save the model to xml file
 dirs.model2xml(address_of_xml_file)
