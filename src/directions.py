@@ -7,6 +7,7 @@ import numpy as np
 import collections
 import dicttoxml
 from xml.dom.minidom import parseString
+from pandas import read_csv
 
 
 class Directions:
@@ -27,7 +28,7 @@ class Directions:
             input:
                 training_path ... string, path to training dataset
                 delimiter ... string, optional
-                skiprows ... int, optional
+                header ... None or 'infer', see pandas.read.csv, optional
                 usecols ... iterable, optional
             output:
                 self
@@ -46,7 +47,7 @@ class Directions:
                 path ... string, path to the test dataset
                 for_fremen ... boolean, if True, method returns also array of timestamps
                 delimiter ... string, optional
-                skiprows ... int, optional
+                header ... None or 'infer', see pandas.read.csv, optional
                 usecols ... iterable, optional
             outputs:
                 X ... np.array, test dataset transformed into the hypertime space
@@ -69,19 +70,19 @@ class Directions:
         self.PREC = None
 
 
-    def fit(self, training_path, delimiter=' ', skiprows=0, usecols=(0, 2, 3, 5, 6)):
+    def fit(self, training_path, delimiter=' ', header=None, usecols=(0, 2, 3, 5, 6)):
         """
         objective:
             to train model
         input:
             training_path ... string, path to training dataset
             delimiter ... string, optional
-            skiprows ... int, optional
+            header ... None or 'infer', see pandas.read.csv, optional
             usecols ... iterable, optional
         output:
             self
         """
-        self.C, self.W, self.PREC = self._estimate_distribution(training_path, delimiter, skiprows, usecols)
+        self.C, self.W, self.PREC = self._estimate_distribution(training_path, delimiter, header, usecols)
         return self
 
 
@@ -107,7 +108,7 @@ class Directions:
             text_file.write(dom.toprettyxml())
 
 
-    def transform_data(self, path, delimiter=' ', skiprows=0, usecols=(0, 2, 3, 5, 6), for_fremen=False):
+    def transform_data(self, path, delimiter=' ', header=None, usecols=(0, 2, 3, 5, 6), for_fremen=False):
         """
         objective:
             returns transformed data into warped hypertime space and also return target values (only ones)
@@ -115,13 +116,13 @@ class Directions:
             path ... string, path to the test dataset
             for_fremen ... boolean, if True, method returns also array of timestamps
             delimiter ... string, optional
-            skiprows ... int, optional
+            header ... None or 'infer', see pandas.read.csv, optional
             usecols ... iterable, optional
         outputs:
             X ... np.array, test dataset transformed into the hypertime space
             times ... np.array, timestamps, optional, only when for_fremen=True
         """
-        dataset = self._load_data(path, delimiter, skiprows, usecols)
+        dataset = self._load_data(path, delimiter, header, usecols)
         X = self._create_X(dataset)
         if for_fremen:
             return X, dataset[:, 0]
@@ -146,21 +147,21 @@ class Directions:
         return prediction
 
 
-    def _estimate_distribution(self, path, delimiter, skiprows, usecols):
+    def _estimate_distribution(self, path, delimiter, header, usecols):
         """
         objective:
             returns parameters of the mixture of gaussian distributions of the data from one class (cluster) projected into the warped hypertime space
         inputs:
             path ... string, path to the test dataset
             delimiter ... string
-            skiprows ... int
+            header ... None or 'infer', see pandas.read.csv
             usecols ... iterable
         outputs:
             C ... np.array, centres of clusters, estimation of expected values of each distribution
             W ... np.array, weights of clusters
             PREC ... np.array, precision matrices of clusters, inverse matrix to the estimation of the covariance of the distribution
         """
-        X = self.transform_data(path, delimiter, skiprows, usecols, for_fremen=False)
+        X = self.transform_data(path, delimiter, header, usecols, for_fremen=False)
         clf = GaussianMixture(n_components=self.clusters, max_iter=500, init_params='random').fit(X)
         W = clf.weights_
         C = clf.means_
@@ -229,7 +230,7 @@ class Directions:
         return shape, values
 
 
-    def _load_data(self, path, delimiter, skiprows, usecols):
+    def _load_data(self, path, delimiter, header, usecols):
         """
         objective: 
             load data from the format: 
@@ -238,12 +239,12 @@ class Directions:
         input:
             path ... string, address of the file
             delimiter ... string
-            skiprows ... int
+            header ... None or 'infer', see pandas.read.csv
             usecols ... iterable
         output:
             dataset ... numpy array, (t, x, y, v_x, v_y)
         """
-        data = np.loadtxt(fname=path, delimiter=delimiter, skiprows=skiprows, usecols=usecols)
+        data = read_csv(filepath_or_buffer=path, sep=delimiter, header=header, usecols=usecols, engine='c', memory_map=True).values  # if you would like extra precision, use also float_precision='round_trip'
         v_x = np.cos(data[:, -1]) * data[:, -2]
         v_y = np.sin(data[:, -1]) * data[:, -2]
         return np.c_[data[:, :-2], v_x, v_y]

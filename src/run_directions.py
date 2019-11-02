@@ -7,9 +7,10 @@ Numpy 1.16.3,
 sklearn 0.20.3,
 SciPy 1.2.1,
 dicttoxml 1.7.4
+pandas 0.22.0
 
 sudo apt update
-sudo apt install python2.7 python-numpy python-sklearn python-scipy python-dicttoxml
+sudo apt install python2.7 python-numpy python-sklearn python-scipy python-dicttoxml python-pandas
 
 **run using:**
 python run_directions.py
@@ -21,7 +22,7 @@ address_of_xml_file = 'whyte_map.xml'  # string, can be defined
 
 # parameters of the training dataset text file
 delimiter = ' '  #  for csv probably ','
-skiprows = 0  # number of rows to be skipped (with header skiprows = 1)
+header = None  # with header containing strings header = 'infer'
 usecols = (0, 2, 3, 5, 6)  # time, position x, position y, velocity, angle of motion
 
 # parameters for the method
@@ -36,7 +37,7 @@ structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodiciti
 dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
 
 # create the model
-dirs = dirs.fit(training_dataset_address, delimiter, skiprows, usecols)
+dirs = dirs.fit(training_dataset_address, delimiter, header, usecols)
 
 # save the model to xml file
 dirs.model2xml(address_of_xml_file)
