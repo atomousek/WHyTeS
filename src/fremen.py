@@ -16,14 +16,16 @@ It is necessary to understand what periodicities you are looking for (or what
 """
 
 import numpy as np
+from cython_files import gammas_for_fremen
+from time import time
+from cmath import rect
 
 
-def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
+def chosen_period(T, S, W, return_all=False, return_W=False):
     """
     input: T numpy array Nx1, time positions of measured values
-           S numpy array Nx1, difference between predicted and measured values
+           S numpy array Nx1, difference between measured and predicted values
            W numpy array Lx1, sequence of reasonable frequencies
-           weights float or numpy array Nx1, weights of every measurement (or error)
            return_all boolean, if True, FreMEn returns all periodicities ordered by prominence
            return_W boolean, if True, FreMEn returns W without chosen frequency
     output: P float64, length of the most influential periodicity in default units
@@ -33,12 +35,9 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
     objective: to choose the most influencing period in the timeseries, where
                timeseries are the residues between reality and model
     """
-    # originally: S = (time_frame_sums - time_frame_freqs)[valid_timesteps]
-    S = (S > np.mean(S))*1.0
-    #print('S: ' + str(S))
-    #print('len(S): ' + str(len(S)))
-    #print('np.sum(S): ' + str(np.sum(S)))
-    G = complex_numbers_batch(T, S, W, weights)
+    # S: the higher error, the higher values! Otherwise it detects, when the error was low :)
+    S = (S > np.mean(S))
+    G = complex_numbers_batch(T, S, W)
     P = max_influence(W, G, return_all)
     # power spectral density ???
     #print('SUM OF AMPLITUDES: ' + str(np.sum(np.absolute(G))))
@@ -57,7 +56,7 @@ def chosen_period(T, S, W, weights=1.0, return_all=False, return_W=False):
         return P#, sum_of_amplitudes
 
 
-def complex_numbers_batch(T, S, W, weights):
+def complex_numbers_batch(T, S, W):
     """
     input: T numpy array Nx1, time positions of measured values
            S numpy array Nx1, sequence of measured values
@@ -67,12 +66,27 @@ def complex_numbers_batch(T, S, W, weights):
     uses: np.e, np.newaxis, np.pi, np.mean()
     objective: to find sparse(?) frequency spectrum of the sequence S
     """
-    G = []
-    for i in xrange(len(W)):
-        Gs = weights * S * (np.e ** (W[i] * T * (-1j) * np.pi * 2))
-        G.append(np.mean(Gs))
-    G = np.array(G)
-    return G
+    #start = time()
+    G_pokus = gammas_for_fremen.calculate(T[S], W, np.pi*2.0)
+    result = np.empty(G_pokus.shape[0], dtype=complex)
+    result.real = G_pokus[:,0]
+    result.imag = G_pokus[:,1]
+    #finish = time()
+    #print('cython: ' + str(finish-start))
+    #G = []
+    #time_exponent =  T[S] * (-1j) * np.pi * 2.0
+    #for i in xrange(len(W)):
+    #    Gs = np.exp(W[i] * time_exponent)
+    #    G.append(np.mean(Gs))
+    #G = np.array(G)
+    #print('G')
+    #print(G)
+    #print('G_pokus')
+    #print(G_pokus)
+    #print('result')
+    #print(result)
+    #return np.array(G)
+    return result
 
 
 def max_influence(W, G, return_all=False):
@@ -92,7 +106,6 @@ def max_influence(W, G, return_all=False):
         idxs = np.argsort(np.absolute(G))
         return 1.0/W[idxs]
     else:
-        #maximum_position = np.argmax(np.absolute(G[1:])) + 1
         maximum_position = np.argmax(np.absolute(G))
         influential_frequency = W[maximum_position]
         # not sure if it is necessary now
