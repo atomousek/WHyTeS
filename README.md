@@ -1,6 +1,6 @@
 # WHyTeS
 
-git clone -b 2020_IJRR --single-branch https://github.com/atomousek/WHyTeS
+git clone -b 2020_itsc --single-branch https://github.com/atomousek/WHyTeS
 
 
 **software used during developement:**
