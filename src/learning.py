@@ -4,61 +4,66 @@ for testing different parameters, do not use :)
 #!/usr/bin/python
 
 import sys
-import directions
+#import directions
+import directions_my_data as directions
 import fremen
 import numpy as np
 from time import time
 import os
 
 # parameters for the method
-number_of_clusters = 1
-#number_of_spatial_dimensions = 4  # france data
-number_of_spatial_dimensions = 2  # france data
+number_of_spatial_dimensions = 4  # france data
+#number_of_spatial_dimensions = 2  # france data
 movement_included = False  # using velocity vector precalculated in dataset.
 
 # time [ms] (unixtime + milliseconds/1000), person id, position x [mm], position y [mm], position z (height) [mm], velocity [mm/s], angle of motion [rad], facing angle [rad]
 #TS = np.loadtxt('../data/training_dataset.txt')[:, [0,-1]]
-T = np.loadtxt('../data/training_dataset.txt')[:, 0]
-number_of_periodicities = 5  # max number of periodicities
-list_of_times = np.loadtxt('../data/test_times.txt').astype(int)
+#dataset_path = '../data/training_dataset_new_format.txt'
+dataset_path = '../data/training_dataset.txt'
+T = np.loadtxt(dataset_path)[:, 0]
+number_of_periodicities = 21  # max number of periodicities
+#list_of_times = np.loadtxt('../data/test_times.txt').astype(int)
 
 
 
 #for number_of_clusters in xrange(1, 7):
-for number_of_clusters in xrange(1, 11):
+for number_of_clusters in xrange(1, 2):
     print('####################')
     print('number of clusters: ' +str(number_of_clusters))
     W=fremen.build_frequencies(60*60*24*7, 60*60)
     list_of_periodicities = []
-    list_of_periodicities = [86400.0, 604800.0, 4320.0, 21600.0, 120960.0]
+    #list_of_periodicities = [86400.0, 604800.0, 4320.0, 21600.0, 120960.0]
 
-    #for no_periodicities in xrange(0,number_of_periodicities+1):
-    for no_periodicities in xrange(number_of_periodicities,number_of_periodicities+1):
+    for no_periodicities in xrange(0,number_of_periodicities+1):
+    #for no_periodicities in xrange(number_of_periodicities,number_of_periodicities+1):
         structure_of_extended_space = [number_of_spatial_dimensions, list_of_periodicities, movement_included]  # suitable input
         # load and train the predictor
         start = time()
         dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
-        dirs = dirs.fit('../data/training_dataset.txt')
+        dirs = dirs.fit(dataset_path)
         finish = time()
         print('time to create model: ' + str(finish-start))
         if finish-start > 100.0:
             print('this time looks too long, I will try to recalculate the model')
             start = time()
             dirs = directions.Directions(clusters=number_of_clusters, structure=structure_of_extended_space)
-            dirs = dirs.fit('../data/training_dataset.txt')
+            dirs = dirs.fit(dataset_path)
             finish = time()
             print('time to create model: ' + str(finish-start))
 
         # calculation of error for fremen
         start = time()
-        X, target = dirs.transform_data('../data/training_dataset.txt')
-        pred_for_fremen = dirs.predict(X)
-        sample_weights = target - pred_for_fremen
+        X = dirs.transform_data(dataset_path)
         finish = time()
-        print('time to create sample weights: ' + str(finish-start))
+        print('time to transform data: ' + str(finish-start))
+        start = time()
+        pred_for_fremen = dirs.predict(X)
+        finish = time()
+        print('time to predict: ' + str(finish-start))
 
         # rmse
-        print(np.sqrt(np.mean((pred_for_fremen - target) ** 2.0)))
+        #print(np.sqrt(np.mean((pred_for_fremen - target) ** 2.0)))
+        print(np.sqrt(np.mean((pred_for_fremen - 1.0) ** 2.0)))
 
         """
         # create the directory (copied from https://thispointer.com/how-to-create-a-directory-in-python/ )
@@ -86,8 +91,12 @@ for number_of_clusters in xrange(1, 11):
         """
 
         start = time()
+        sample_weights = 1.0 - pred_for_fremen
+        #sample_weights = pred_for_fremen
         #P, W = fremen.chosen_period(T=TS[:,0], S=TS[:,1], W=W, weights=sample_weights, return_W=True)
-        P, W = fremen.chosen_period(T=T, S=sample_weights, W=W, weights=1.0, return_W=True)
+        #P, W = fremen.chosen_period(T=T, S=sample_weights, W=W, weights=1.0, return_W=True)
+        #P, W = fremen.chosen_period(T=T, S=sample_weights, W=W, return_W=True)
+        P = fremen.chosen_period(T=T, S=sample_weights, W=W, return_W=False)
 
         #all_P = fremen.chosen_period(T=T, S=sample_weights, W=W, weights=1.0, return_all=True)
         finish = time()
